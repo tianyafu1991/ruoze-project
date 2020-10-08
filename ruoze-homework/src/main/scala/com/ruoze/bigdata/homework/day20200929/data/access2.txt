@@ -1,0 +1,10 @@
+[01/10/2020:05:39:34]	106.85.14.88	-	3423	-	POST	http://ruozedata.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:05:49:34]	106.85.14.88	-	3423	-	POST	http://ruoze.ke.qq.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:06:39:34]	106.85.14.88	-	3423	-	POST	http://ruozedata.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:06:49:34]	106.85.14.88	-	3423	-	POST	http://ruoze.ke.qq.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:07:39:34]	106.85.14.88	-	3423	-	POST	http://ruozedata.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:07:49:34]	106.85.14.88	-	3423	-	POST	http://ruoze.ke.qq.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:08:39:34]	106.85.14.88	-	3423	-	POST	http://ruozedata.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:08:49:34]	106.85.14.88	-	3423	-	POST	http://ruoze.ke.qq.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:09:39:34]	106.85.14.88	-	3423	-	POST	http://ruozedata.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
+[01/10/2020:09:49:34]	106.85.14.88	-	3423	-	POST	http://ruoze.ke.qq.com/video/av5216721273?a=b&c=d	200	414	2652	MISS	Mozilla/5.0（compatible; AhrefsBot/5.0; +http://ahrefs.com/robot/）	text/html
