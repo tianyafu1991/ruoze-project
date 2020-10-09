@@ -27,16 +27,17 @@ object SparkSQLAccessLogApp {
 
 //    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop01:9000")
 
-    val path = "/ruozedata/data/access2.txt"
+    /*val path = "/ruozedata/data/access2.txt"
 
     val outPut = "/ruozedata/output1"
-    val outPut2 = "/ruozedata/log"
+    val outPut2 = "/ruozedata/log"*/
 
-    /*
     val path = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\data\\access2.txt"
     val outPut = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\out"
     val outPut2 = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\out2"
-*/
+
+
+
     FileUtils.delete(spark.sparkContext.hadoopConfiguration, outPut)
     FileUtils.delete(spark.sparkContext.hadoopConfiguration, outPut2)
 
