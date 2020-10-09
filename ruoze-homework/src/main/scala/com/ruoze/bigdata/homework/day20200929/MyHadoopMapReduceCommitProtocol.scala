@@ -25,6 +25,7 @@ class MyHadoopMapReduceCommitProtocol(jobId: String, path: String, dynamicPartit
     val domain = splits(1).split("=")(1)
     val compression = if (domain == "ruozedata.com") ".gz" else ".bz2"
     f"${domain}_access_${time}${suffix}${compression}"
+//    f"${domain}_access_${time}${suffix}"
   }
 
   override def newTaskTempFile(taskContext: TaskAttemptContext, dir: Option[String], ext: String): String = {
