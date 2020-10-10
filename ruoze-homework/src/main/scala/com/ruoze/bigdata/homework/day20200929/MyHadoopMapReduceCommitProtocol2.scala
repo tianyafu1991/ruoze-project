@@ -16,13 +16,13 @@ class MyHadoopMapReduceCommitProtocol2(jobId: String, path: String, dynamicParti
 
   private def stagingDir = new Path(path, ".spark-staging-" + jobId)
 
-  //    val dirPath = "time=2020100105/domain=ruoze.ke.qq.com"
+  //    val dirPath = "domain=ruoze.ke.qq.com/time=2020100105"
   def getFilename(dir: Option[String]): String = {
     val suffix = ".log"
     val dirPath = dir.getOrElse("")
     val splits = dirPath.split("/")
-    var time = splits(1)
-    val domain = splits(0)
+    var time = splits(1).split("=")(1)
+    val domain = splits(0).split("=")(1)
     val compression = if (domain == "ruozedata.com") ".gz" else ".bz2"
     if(domain == "ruozedata.com"){
       time = time.substring(2)
@@ -34,12 +34,13 @@ class MyHadoopMapReduceCommitProtocol2(jobId: String, path: String, dynamicParti
   }
 
   def getDirNew(dir: Option[String]):Option[String]={
-    //    val dirPath = "time=2020100105/domain=ruoze.ke.qq.com"
+    //    val dirPath = "domain=ruoze.ke.qq.com/time=2020100105"
     if(!dir.isEmpty){
       val dirStr = dir.get
       val splits = dirStr.split("/")
-      var time = splits(0).split("=")(1)
-      val domain = splits(1).split("=")(1)
+      var time = splits(1).split("=")(1)
+      val domain = splits(0).split("=")(1)
+      time = time.substring(0,time.length-2)
       Some(s"${domain}/${time}")
     }else{
       Option.empty
@@ -51,7 +52,7 @@ class MyHadoopMapReduceCommitProtocol2(jobId: String, path: String, dynamicParti
 
     val newDir = getDirNew(dir)
 
-    val filename = getFilename(newDir)
+    val filename = getFilename(dir)
 
     val stagingDir: Path = committer match {
       case _ if dynamicPartitionOverwrite =>

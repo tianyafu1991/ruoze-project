@@ -18,7 +18,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <hadoop.version>2.6.0-cdh5.16.2</hadoop.version>
         <hive.version>1.1.0-cdh5.16.2</hive.version>
-        <spark.version>2.4.6</spark.version>
+<!--        <spark.version>2.4.6</spark.version>-->
+        <spark.version>3.0.1</spark.version>
         <scala.binary.version>2.12</scala.binary.version>
         <flume.version>1.6.0-cdh5.16.2</flume.version>
         <hbase.version>1.2.0-cdh5.16.2</hbase.version>

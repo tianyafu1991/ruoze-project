@@ -14,7 +14,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, RowFactory, SaveMode, Spar
 object SparkSQLAccessLogApp {
 
   def main(args: Array[String]): Unit = {
-//    System.setProperty("HADOOP_USER_NAME", "hadoop")
+    System.setProperty("HADOOP_USER_NAME", "hadoop")
 
     val spark = SparkSession
       .builder()
@@ -25,16 +25,16 @@ object SparkSQLAccessLogApp {
 
     val customTimeFormat = "yyyyMMddHH"
 
-//    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop01:9000")
+    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop:9000")
 
-    /*val path = "/ruozedata/data/access2.txt"
+    val path = "/ruozedata/data/access.txt"
 
     val outPut = "/ruozedata/output1"
-    val outPut2 = "/ruozedata/log"*/
+    val outPut2 = "/ruozedata/log"
 
-    val path = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\data\\access2.txt"
-    val outPut = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\out"
-    val outPut2 = "F:\\study\\ruozedata\\ruoze-project\\ruoze-homework\\src\\main\\scala\\com\\ruoze\\bigdata\\homework\\day20200929\\out2"
+    /*val path = "ruoze-homework/src/main/scala/com/ruoze/bigdata/homework/day20200929/data/access.txt"
+    val outPut = "ruoze-homework/src/main/resources/out"
+    val outPut2 = "ruoze-homework/src/main/resources/out2"*/
 
 
 
@@ -52,28 +52,19 @@ object SparkSQLAccessLogApp {
       .format(rawDataSource)
       .save(outPut)
 
-    /*accessDF.write
-      .partitionBy("time", "domain")
-      .option("timestampFormat", "yyyy/MM/dd HH:mm:ss ZZ")
-//      .option("compression","bzip2")
-      .format("csv")
-      .save(outPut)
 
+    spark.conf.unset("spark.sql.sources.commitProtocolClass")
+    spark.conf.set("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.MyHadoopMapReduceCommitProtocol2")
 
-    spark.conf.set("spark.sql.sources.commitProtocolClass","com.ruoze.bigdata.homework.day20200929.MyHadoopMapReduceCommitProtocol2")
-
-    val format = "com.ruoze.bigdata.homework.day20200929"
+    val format = "com.ruoze.bigdata.homework.day20200929.upload2HDFS"
 
     val inputDF: DataFrame = spark.read.format(format).load(outPut)
 
     inputDF
       .write
-      .partitionBy("time","domain")
-      .option("timestampFormat", "yyyy/MM/dd HH:mm:ss ZZ")
-      .option("format","customFormat")
-      .format(format).save(outPut2)*/
-
-
+      .format(format)
+      .mode(SaveMode.Append)
+      .save(outPut2)
 
     spark.stop()
   }

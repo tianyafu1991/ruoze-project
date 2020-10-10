@@ -1,46 +1,47 @@
-package com.ruoze.bigdata.homework.day20200929.rawETL
+package com.ruoze.bigdata.homework.day20200929.upload2HDFS
 
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
-  //RelationProvider要重写的方法，用来读取数据
+  //RelationProvider要实现的方法
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
-    createRelation(sqlContext, parameters, null)
+    createRelation(sqlContext,parameters,null)
   }
 
-  //SchemaRelationProvider要实现的方法，用来用户传入一个自定义的schema
+  //SchemaRelationProvider要实现的方法
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
     val path: Option[String] = parameters.get("path")
     path match {
-      case Some(p) =>new RawDataSourceRelation(sqlContext,p,schema)
+      case Some(p) => new UploadDataSourceRelation(sqlContext,p,schema)
       case _ => throw new IllegalArgumentException("path is not exists....")
     }
   }
 
-  //CreatableRelationProvider要重写的方法，用来写出数据
+  //CreatableRelationProvider
   override def createRelation(sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
-    val path = parameters.getOrElse("path", "./output/") //can throw an exception/error, it's just for this tutorial
+    val path: String = parameters.getOrElse("path", "")
     val fsPath = new Path(path)
-    val fs = fsPath.getFileSystem(sqlContext.sparkContext.hadoopConfiguration)
+    val fs: FileSystem = fsPath.getFileSystem(sqlContext.sparkContext.hadoopConfiguration)
 
     mode match {
-      case SaveMode.Append => sys.error("Append mode is not supported by " + this.getClass.getCanonicalName); sys.exit(1)
-      case SaveMode.Overwrite => fs.delete(fsPath, true)
+      case SaveMode.Append => println("append......")
+      case SaveMode.Overwrite => fs.delete(fsPath,true)
       case SaveMode.ErrorIfExists => sys.error("Given path: " + path + " already exists!!"); sys.exit(1)
       case SaveMode.Ignore => sys.exit()
     }
 
     val formatName = parameters.getOrElse("format", "customFormat")
+
     formatName match {
       case "customFormat" => saveAsCustomFormat(data, path, mode)
       case "json" => saveAsJson(data, path, mode)
       case _ => throw new IllegalArgumentException(formatName + " is not supported!!!")
     }
-    createRelation(sqlContext, parameters, data.schema)
+    createRelation(sqlContext,parameters,data.schema)
   }
 
   private def saveAsJson(data : DataFrame, path : String, mode: SaveMode): Unit = {
@@ -56,22 +57,31 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
      * Here, I am  going to save this as simple text file which has values separated by "|".
      * But you can have your own way to store without any restriction.
      */
-    /*val customFormatRDD = data.rdd.map(row => {
-      row.toSeq.map(value => value.toString).mkString("|")
-    })
-    customFormatRDD.saveAsTextFile(path)*/
 
     import data.sparkSession.implicits._
 
-    data.select($"*",$"time".as("myTime"),$"domain".as("myDomain"))
+    //域名为ruozedata.com的，取 domain,city,isp三个字段
+    data.filter('domain === "ruozedata.com").coalesce(1)
+      .select($"domain".as("my_domain"),$"city",$"isp",$"domain",$"time")
       .coalesce(1)
       .write
-      .partitionBy("time","domain")
-      .options(Map("format" -> "customFormat"))
+      .partitionBy("domain","time")
+      .option("sep","$$$")
+      .option("format" , "customFormat")
+      .mode(mode)
+      .format("csv")
+      .save(path)
+
+    //域名为ruoze.ke.qq.com的，取 domain,city,isp三个字段
+    data.filter('domain === "ruoze.ke.qq.com")
+      .select($"domain".as("my_domain"),$"time".as("my_time"),$"cache",$"domain",$"time")
+      .coalesce(1)
+      .write
+      .partitionBy("domain","time")
+      .option("sep","\t")
+      .option("format" , "customFormat")
       .mode(mode)
       .format("csv")
       .save(path)
   }
-
-
 }
