@@ -20,7 +20,7 @@ object SparkSQLAccessLogApp2 {
       .builder()
       .appName(this.getClass.getSimpleName)
       .master("local")
-      .config("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.MyHadoopMapReduceCommitProtocol2")
+      .config("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.commitProtocol.MyHadoopMapReduceCommitProtocol2")
       .getOrCreate()
 
     val customTimeFormat = "yyyyMMddHH"
