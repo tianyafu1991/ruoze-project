@@ -9,6 +9,7 @@
     <version>1.0</version>
     <modules>
         <module>ruoze-homework</module>
+        <module>ruoze-spark</module>
     </modules>
     <packaging>pom</packaging>
 

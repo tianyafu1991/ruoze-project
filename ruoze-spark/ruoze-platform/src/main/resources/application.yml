@@ -1,0 +1,27 @@
+server:
+  port: 9527
+  servlet:
+    context-path: /platform
+
+ruozedata:
+  hadoop:
+    nn:
+      uri: hadoop01:50070
+    rm:
+      uri: hadoop01:18088
+
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:hadoop01}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_NAME:ruozedata}?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+#  devtools:
+#    restart:
+#      enabled: true
+
