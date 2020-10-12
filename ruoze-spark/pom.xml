@@ -12,6 +12,9 @@
     <artifactId>ruoze-spark</artifactId>
 
     <packaging>pom</packaging>
+    <modules>
+        <module>ruoze-spark-streaming</module>
+    </modules>
 
 
 </project>
