@@ -41,14 +41,12 @@ object SparkSQLAccessLogApp {
 
     val spark = SparkSession
       .builder()
-      /*.appName(this.getClass.getSimpleName)
-      .master("local")*/
       .config("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.commitProtocol.MyHadoopMapReduceCommitProtocol")
       .getOrCreate()
 
     val customTimeFormat = "yyyyMMddHH"
 
-    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop:9000")
+    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop01:9000")
 
     val path = "/ruozedata/data/access.txt"
 

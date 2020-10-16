@@ -3,12 +3,15 @@ package com.ruoze.bigdata.homework.day20200929.commitProtocol
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
 import org.apache.hadoop.mapreduce.{OutputCommitter, TaskAttemptContext}
+import org.apache.spark.internal.Logging
 import org.apache.spark.internal.io.HadoopMapReduceCommitProtocol
+import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
 
 class MyHadoopMapReduceCommitProtocol(jobId: String, path: String, dynamicPartitionOverwrite: Boolean)
-  extends HadoopMapReduceCommitProtocol(jobId, path, dynamicPartitionOverwrite) {
+  extends HadoopMapReduceCommitProtocol(jobId, path, dynamicPartitionOverwrite) with Logging {
+
 
   @transient private var committer: OutputCommitter = _
 
@@ -29,8 +32,12 @@ class MyHadoopMapReduceCommitProtocol(jobId: String, path: String, dynamicPartit
   }
 
   override def newTaskTempFile(taskContext: TaskAttemptContext, dir: Option[String], ext: String): String = {
+    /*val conf = spark.conf
+    logError("开始getFile之前")
+    logError(conf.toString)*/
     val filename = getFilename(dir)
 
+    logError("开始getFile之后")
     val stagingDir: Path = committer match {
       case _ if dynamicPartitionOverwrite =>
         assert(dir.isDefined,
