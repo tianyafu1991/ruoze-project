@@ -1,11 +1,42 @@
 package com.ruoze.bigdata.homework.day20200929.utils
 
 import java.text.{ParseException, SimpleDateFormat}
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.{Calendar, Date}
+
+import com.ruoze.bigdata.homework.day20200929.test.DateTimeUtilsTest.format
+import org.apache.spark.sql.catalyst.util.DateFormatter
 
 object DateUtils {
 
   val simpleDateFormat: SimpleDateFormat = new SimpleDateFormat("dd/MM/yyyy:hh:mm:ss")
+
+  val format: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy:HH:mm:ss")
+
+  def analysistime(time: String): Array[String] = {
+    try {
+      val realtime = time.substring(1, time.length - 1)
+      val localDateTime: LocalDateTime = LocalDateTime.parse(realtime, format)
+      val year: Int = localDateTime.getYear
+      val month: Int = localDateTime.getMonthValue
+      val day: Int = localDateTime.getDayOfMonth
+      val hour: Int = localDateTime.getHour
+      val minute: Int = localDateTime.getMinute
+      val second: Int = localDateTime.getSecond
+      val realMonth = if (month < 10) "0" + month else month.toString
+      val realDay = if (day < 10) "0" + day else day.toString
+      val realHour = if (hour < 10) "0" + hour else hour.toString
+      val realMinute = if (minute < 10) "0" + minute else minute.toString
+      val realSecond = if (second < 10) "0" + second else second.toString
+      (year.toString :: realMonth :: realDay :: realHour :: realMinute :: realSecond :: Nil).toArray
+    } catch {
+      case e: ParseException => {
+        e.printStackTrace()
+        null
+      }
+    }
+  }
 
   def analysistime(time: String, simpleDateFormat: SimpleDateFormat): Array[String] = {
     var timeParse: Date = null

@@ -1,4 +1,4 @@
-package com.ruoze.bigdata.homework.day20200929.commitProtocol
+package com.ruoze.bigdata.homework.day20200929.v1.commitProtocol
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter

@@ -1,4 +1,4 @@
-package com.ruoze.bigdata.homework.day20200929.rawETL
+package com.ruoze.bigdata.homework.day20200929.v1.rawETL
 
 import java.text.SimpleDateFormat
 

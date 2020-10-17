@@ -43,7 +43,7 @@ object MockData {
     //创建producer
     val kafkaProducer: KafkaProducer[String, String] = createKafkaProducer
     val topic = "streaming1"
-    for (i <- 1 to 10000){
+    for (i <- 1 to 600000){
       val accessLog: String = MockAccessLog.mockAccessLog(i)
       kafkaProducer.send(new ProducerRecord[String,String](topic,null,accessLog))
     }

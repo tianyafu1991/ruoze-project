@@ -20,7 +20,7 @@ object SparkSQLAccessLogApp2 {
       .builder()
       .appName(this.getClass.getSimpleName)
       .master("local")
-      .config("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.commitProtocol.MyHadoopMapReduceCommitProtocol2")
+      .config("spark.sql.sources.commitProtocolClass", "com.ruoze.bigdata.homework.day20200929.v1.commitProtocol.MyHadoopMapReduceCommitProtocol2")
       .getOrCreate()
 
     val customTimeFormat = "yyyyMMddHH"
@@ -42,7 +42,7 @@ object SparkSQLAccessLogApp2 {
     //    FileUtils.delete(spark.sparkContext.hadoopConfiguration, outPut)
     FileUtils.delete(spark.sparkContext.hadoopConfiguration, output)
 
-    val format = "com.ruoze.bigdata.homework.day20200929.upload2HDFS"
+    val format = "com.ruoze.bigdata.homework.day20200929.v1.upload2HDFS"
 
     val inputDF: DataFrame = spark.read.format(format).load(input)
 

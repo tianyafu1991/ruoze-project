@@ -1,4 +1,4 @@
-package com.ruoze.bigdata.homework.day20200929.upload2HDFS
+package com.ruoze.bigdata.homework.day20200929.v1.upload2HDFS
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
