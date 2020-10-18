@@ -1,0 +1,34 @@
+nodes:
+  - name: spark_type_job
+    type: spark
+    config:
+      master: yarn
+      execution-jar: ruozedata-homework-1.0.jar
+      class: com.tianya.bigdata.homework.day20200905.sparketlwithAccumulator.etl.SparkETL3
+      deploy-mode: client
+      name: spark_log_etl_on_cdh
+      jars: ip2region-1.7.2.jar,paranamer-2.8.jar,ip2region.db,mysql-connector-java-5.1.47.jar
+      driver-memory: 2048M
+      executor-memory: 2048M
+      executor-cores: 2
+      num-executors: 2
+      conf.spark.testing.memory: 2147480000
+      conf.spark.dw.raw.path: /tmp/ruozedata/dw/raw/access
+      conf.spark.dw.tmp.path: /tmp/ruozedata/dw/ods_tmp/access
+      conf.spark.dw.ods.path: /tmp/ruozedata/dw/ods/access
+      conf.spark.execute.time: ${dt}
+  - name: hive_add_partition
+    type: hive
+    dependsOn:
+      - spark_type_job
+    config:
+      user.to.proxy: hdfs
+      hive.script: hive.hql
+      hiveconf.dt: ${dt}
+  - name: hive_etl_job
+    type: hive
+    dependsOn:
+      - hive_add_partition
+    config: 
+      hive.script: hive_etl.hql
+      hiveconf.dt: ${dt}

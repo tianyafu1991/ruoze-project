@@ -8,5 +8,5 @@ case class CustomConf(confName:String
                       ,fileNameSuffix:String
                       ,logContentFields:String
                       ,fieldsDelimiter:String){
-  override def toString: String = f"${confName}+\t + ${domain}+\t +${compressCodec}+\t +${fileNamePrefix}+\t +${fileNameTimeFormat}+\t +${fileNameSuffix}+\t +${logContentFields}+\t +${fieldsDelimiter}"
+  override def toString: String = f"${confName}\t${domain}\t${compressCodec}\t${fileNamePrefix}\t${fileNameTimeFormat}\t${fileNameSuffix}\t${logContentFields}\t${fieldsDelimiter}"
 }
