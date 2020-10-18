@@ -10,8 +10,7 @@ object SparkSQLAccessLogAppV2 {
   def main(args: Array[String]): Unit = {
     System.setProperty("HADOOP_USER_NAME", "hadoop")
 
-    val rawCommitProtocal = "com.ruoze.bigdata.homework.day20200929.v2.raw.RawHadoopMapReduceCommitProtocol"
-
+    val rawCommitProtocal = "com.ruoze.bigdata.homework.day20200929.v2.commitProtocol.RawHadoopMapReduceCommitProtocol"
 
     val conf = new SparkConf()
       .set(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key,rawCommitProtocal)
@@ -22,11 +21,12 @@ object SparkSQLAccessLogAppV2 {
       .getOrCreate()
     import spark.implicits._
 
-    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop:9000")
+    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop01:9000")
 
     //读取相应配置
     val rawPath: String = conf.get("spark.raw.path", "/ruozedata/data/access.txt")
     val etlPath: String = conf.get("spark.etl.path", "/ruozedata/etl/log")
+    val uploadPath: String = conf.get("spark.upload.path", "/ruozedata/log")
     val confName: String = conf.get("spark.etl.conf.name", "my_custom_conf")
     //读取数据库中的配置信息
     val confSql =
@@ -46,7 +46,7 @@ object SparkSQLAccessLogAppV2 {
     val confDF: DataFrame = spark
       .read
       .format("jdbc")
-      .option(JDBCOptions.JDBC_URL, "jdbc:mysql://hadoop:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8")
+      .option(JDBCOptions.JDBC_URL, "jdbc:mysql://hadoop01:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8")
       .option(JDBCOptions.JDBC_TABLE_NAME, confSql)
       .option(JDBCOptions.JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver")
       .option("user", "root")
@@ -66,21 +66,30 @@ object SparkSQLAccessLogAppV2 {
           , row.getAs[String]("fields_delimiter")).toString)
     }).rdd.collectAsMap()
 
-    confMap += ("format" -> "rawCustomFormat")
-    val customFormat = "com.ruoze.bigdata.homework.day20200929.v2.customDataSource"
 
-    val rawDF: DataFrame = spark.read.format(customFormat).load(rawPath)
+    confMap += ("format" -> "rawCustomFormat")
+    val customRawFormat = "com.ruoze.bigdata.homework.day20200929.v2.customDataSource.raw"
+
+    val rawDF: DataFrame = spark.read.format(customRawFormat).load(rawPath)
     /*rawDF.printSchema()
     rawDF.show(false)*/
     //全日志、全字段、无压缩写出
-    rawDF.write.mode(SaveMode.Overwrite).option("sep","\t").format(customFormat).save(etlPath)
+    rawDF.write.mode(SaveMode.Overwrite).option("sep","\t").format(customRawFormat).save(etlPath)
 
-    confMap += ("format" -> "uploadCustomFormat")
-    val etlDF: DataFrame = spark.read.format(customFormat).load(etlPath)
+    confMap =confMap.updated("format","uploadCustomFormat")
+//    confMap += ("format" -> "uploadCustomFormat")
+    val customUploadFormat = "com.ruoze.bigdata.homework.day20200929.v2.customDataSource.upload"
+    val etlDF: DataFrame = spark.read.format(customUploadFormat).load(etlPath)
 
     etlDF.printSchema()
     etlDF.show(false)
 
+    val uploadCommitProtocal = "com.ruoze.bigdata.homework.day20200929.v2.commitProtocol.UploadHadoopMapReduceCommitProtocol"
+
+    spark.conf.unset(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key)
+    spark.conf.set(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key,uploadCommitProtocal)
+
+    etlDF.write.format(customUploadFormat).options(confMap).mode(SaveMode.Overwrite).save(uploadPath)
 
 
     spark.stop()
