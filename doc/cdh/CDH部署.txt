@@ -1,0 +1,234 @@
+[root@ruozedata001 ~]# mkdir cdh5.16.2
+[root@ruozedata001 ~]# cd cdh5.16.2/
+[root@ruozedata001 cdh5.16.2]# ll
+total 0
+[root@ruozedata001 cdh5.16.2]# 
+
+# 下载
+http://archive.cloudera.com/cm5/cm/5/cloudera-manager-centos7-cm5.16.2_x86_64.tar.gz
+
+parcels文件:
+http://archive.cloudera.com/cdh5/parcels/5.16.2/CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel
+
+http://archive.cloudera.com/cdh5/parcels/5.16.2/CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel.sha1
+
+http://archive.cloudera.com/cdh5/parcels/5.16.2/manifest.json
+
+
+# 关闭防火墙，清空防火墙拦截规则
+[root@ruozedata001 cdh5.16.2]# systemctl stop firewalld
+[root@ruozedata001 cdh5.16.2]# systemctl disable firewalld
+[root@ruozedata001 cdh5.16.2]# iptables -F 
+
+# 关闭selinux
+[root@ruozedata001 cdh5.16.2]# vim /etc/selinux/config 
+SELINUX=disabled
+
+# 时区、时钟的同步
+[root@ruozedata003 ~]# date
+Mon Oct 19 00:57:18 CST 2020
+[root@ruozedata003 ~]# timedatectl
+      Local time: Mon 2020-10-19 00:57:52 CST
+  Universal time: Sun 2020-10-18 16:57:52 UTC
+        RTC time: Mon 2020-10-19 00:57:51
+       Time zone: Asia/Shanghai (CST, +0800)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: yes
+      DST active: n/a
+
+Warning: The system is configured to read the RTC time in the local time zone.
+         This mode can not be fully supported. It will create various problems
+         with time zone changes and daylight saving time adjustments. The RTC
+         time is never updated, it relies on external facilities to maintain it.
+         If at all possible, use RTC in UTC by calling
+         'timedatectl set-local-rtc 0'.
+[root@ruozedata003 ~]# 
+
+时钟同步
+云主机一般不会出现时间不同步，但自己的机器一定要做时间同步
+[root@ruozedata001 cdh5.16.2]# yum install -y ntp
+[root@ruozedata001 cdh5.16.2]# vim /etc/ntp.conf 
+# local clock
+server 127.127.1.0
+fudge  127.127.1.0 stratum 10
+
+# time
+server 0.asia.pool.ntp.org
+server 1.asia.pool.ntp.org
+server 2.asia.pool.ntp.org
+server 3.asia.pool.ntp.org
+
+# 当外部事件不可用时，可以使用当前本地硬件时间
+server 127.127.1.0 iburst local clock
+
+# 允许哪些网段的机器来同步时间
+restrict 172.25.255.0 mask 255.255.255.0 nomodify notrap
+
+[root@ruozedata001 cdh5.16.2]# systemctl start ntpd
+[root@ruozedata001 cdh5.16.2]# systemctl status ntpd
+● ntpd.service - Network Time Service
+   Loaded: loaded (/usr/lib/systemd/system/ntpd.service; disabled; vendor preset: disabled)
+   Active: active (running) since Mon 2020-10-19 01:08:24 CST; 24s ago
+  Process: 4926 ExecStart=/usr/sbin/ntpd -u ntp:ntp $OPTIONS (code=exited, status=0/SUCCESS)
+ Main PID: 4927 (ntpd)
+   CGroup: /system.slice/ntpd.service
+           └─4927 /usr/sbin/ntpd -u ntp:ntp -g
+
+Oct 19 01:08:24 ruozedata001 systemd[1]: Starting Network Time Service...
+Oct 19 01:08:24 ruozedata001 ntpd[4926]: ntpd 4.2.6p5@1.2349-o Tue Jun 23 15:38:18 UTC 2020 (1)
+Oct 19 01:08:24 ruozedata001 ntpd[4927]: proto: precision = 0.049 usec
+Oct 19 01:08:24 ruozedata001 systemd[1]: Started Network Time Service.
+Oct 19 01:08:24 ruozedata001 ntpd[4927]: 0.0.0.0 c01d 0d kern kernel time sync enabled
+Oct 19 01:08:24 ruozedata001 ntpd[4927]: line 27 column 27 syntax error, unexpected T_String, expecting T_EOC
+Oct 19 01:08:24 ruozedata001 ntpd[4927]: syntax error in /etc/ntp.conf line 27, column 27
+# 验证
+[root@ruozedata001 cdh5.16.2]# ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ LOCAL(0)        .LOCL.          10 l   87   64    2    0.000    0.000   0.000
+ 202-65-114-202. .INIT.          16 u    -   64    0    0.000    0.000   0.000
+ time.cloudflare 10.21.8.19       3 u   24   64    3  238.158  -10.811   1.607
+ any.time.nl     133.243.238.164  2 u   24   64    3  181.451  -71.083   2.081
+ cdns-khi-01.ptc 78.42.90.216     2 u   23   64    1  279.857  -55.087   0.000
++120.25.115.20   10.137.53.7      2 u   52   64    7   27.774    0.299   0.343
+ 10.143.33.49    .INIT.          16 u    -   16    0    0.000    0.000   0.000
+-100.100.3.1     10.137.55.181    2 u   19   64    3    1.266    0.526   0.651
++100.100.3.2     10.137.55.181    2 u   49   64    7    1.236    0.341   0.377
+*100.100.3.3     10.137.55.181    2 u   48   64    7    1.169    0.287   0.347
+-203.107.6.88    100.107.25.114   2 u   47   64    7   26.384   -0.641   0.578
+ 10.143.33.50    .INIT.          16 u    -   16    0    0.000    0.000   0.000
+ 10.143.33.51    .INIT.          16 u    -   16    0    0.000    0.000   0.000
+ 10.143.0.44     .INIT.          16 u    -   16    0    0.000    0.000   0.000
+ 10.143.0.45     .INIT.          16 u    -   16    0    0.000    0.000   0.000
+ 10.143.0.46     .INIT.          16 u    -   16    0    0.000    0.000   0.000
+-100.100.5.1     10.137.55.181    2 u   41   64    7    1.811    0.678   0.338
+-100.100.5.2     10.137.55.181    2 u   40   64    7    1.663    0.582   0.382
+-100.100.5.3     10.137.55.181    2 u   39   64    7    1.558    0.604   0.302
+
+# 其它两台小弟节点是不需要走网络去同步时间的，所以需要停掉ntpd服务
+[root@ruozedata002 ~]# systemctl stop ntpd
+[root@ruozedata002 ~]# systemctl disable ntpd
+[root@ruozedata003 ~]# systemctl stop ntpd
+[root@ruozedata003 ~]# systemctl disable ntpd
+
+# 小弟与老大同步并定时
+[root@ruozedata002 ~]# ntpdate ruozedata001
+19 Oct 01:13:29 ntpdate[1720]: adjust time server 172.25.255.132 offset -0.007519 sec
+[root@ruozedata002 ~]# crontab -e
+00 00 * * * ntpdate ruozedata001
+[root@ruozedata002 ~]# crontab -l
+00 00 * * * ntpdate ruozedata001
+
+[root@ruozedata003 ~]# ntpdate ruozedata001
+19 Oct 01:14:03 ntpdate[1725]: adjust time server 172.25.255.132 offset -0.008484 sec
+[root@ruozedata003 ~]# crontab -e
+00 00 * * * ntpdate ruozedata001
+[root@ruozedata003 ~]# crontab -l
+00 00 * * * ntpdate ruozedata001
+
+
+# 部署python
+[root@ruozedata003 ~]# python -V
+Python 2.7.5
+不要升级python版本
+
+
+
+# 创建cmf 和 amon的 db 和 user
+
+[root@ruozedata001 cdh5.16.2]# su - mysqladmin
+Last login: Mon Oct 19 00:18:45 CST 2020 on pts/0
+ruozedata001:mysqladmin:/usr/local/mysql:>service mysql status
+MySQL running (4705)[  OK  ]
+ruozedata001:mysqladmin:/usr/local/mysql:>mysql -uroot -P33308 -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.7.26-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> 
+mysql> create database cmf default character set utf8;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> grant all privileges on cmf.* to cmf@'%' identified by 'Ruozedata0123!';
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> create database amon default character set utf8;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> grant all privileges on amon.* to amon@'%' identified by 'Ruozedata0123!';
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+# 拷贝MySQL jdbc jar
+
+[root@ruozedata001 cdh5.16.2]# mkdir -p /usr/share/java
+[root@ruozedata001 cdh5.16.2]# cd
+[root@ruozedata001 ~]# cp /home/hadoop/lib/mysql-connector-java-5.1.47.jar /usr/share/java/mysql-connector-java.jar
+
+# 拷贝安装包到/tmp目录并分发
+[root@ruozedata001 ~]# cp /home/hadoop/software/cloudera-manager-centos7-cm5.16.2_x86_64.tar.gz /tmp
+
+[root@ruozedata001 ~]# scp /tmp/cloudera-manager-centos7-cm5.16.2_x86_64.tar.gz ruozedata002:/tmp
+[root@ruozedata001 ~]# scp /tmp/cloudera-manager-centos7-cm5.16.2_x86_64.tar.gz ruozedata003:/tmp
+[root@ruozedata001 ~]# cd /tmp
+
+[root@ruozedata001 tmp]# mkdir /opt/cloudera-manager
+[root@ruozedata001 tmp]# tar -xvf cloudera-manager-centos7-cm5.16.2_x86_64.tar.gz -C /opt/cloudera-manager
+
+[root@ruozedata001 tmp]# cd /opt/cloudera-manager
+
+[root@ruozedata001 cloudera-manager]# ll
+total 8
+drwxr-xr-x 4 1106 4001 4096 May 18  2019 cloudera
+drwxr-xr-x 9 1106 4001 4096 May 18  2019 cm-5.16.2
+[root@ruozedata001 cloudera-manager]# cd cm-5.16.2
+[root@ruozedata001 cm-5.16.2]# cd etc/
+[root@ruozedata001 etc]# ll
+total 20
+drwxr-xr-x 2 1106 4001 4096 May 18  2019 cloudera-scm-agent
+drwxr-xr-x 2 1106 4001 4096 May 18  2019 cloudera-scm-server
+drwxr-xr-x 2 1106 4001 4096 May 18  2019 default
+drwxr-xr-x 2 1106 4001 4096 May 18  2019 init.d
+drwxr-xr-x 3 1106 4001 4096 May 18  2019 security
+[root@ruozedata001 etc]# vim cloudera-scm-agent/config.ini
+server_host=ruozedata001
+[root@ruozedata001 etc]# vim cloudera-scm-server/db.properties 
+com.cloudera.cmf.db.host=ruozedata001
+com.cloudera.cmf.db.name=cmf
+com.cloudera.cmf.db.user=cmf
+com.cloudera.cmf.db.password=Ruozedata0123!
+com.cloudera.cmf.db.setupType=EXTERNAL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
