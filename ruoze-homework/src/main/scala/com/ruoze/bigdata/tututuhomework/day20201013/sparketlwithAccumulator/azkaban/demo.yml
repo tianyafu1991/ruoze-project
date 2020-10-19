@@ -1,0 +1,9 @@
+config:
+  user.to.proxy: tianyafu
+
+nodes:
+  - name: hive_etl_job
+    type: hive
+    config:
+      hive.script: hive_etl.hql
+      hiveconf.dt: ${dt}

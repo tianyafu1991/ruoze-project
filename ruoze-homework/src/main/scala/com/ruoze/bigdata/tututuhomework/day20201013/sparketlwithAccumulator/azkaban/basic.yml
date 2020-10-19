@@ -1,13 +1,16 @@
+config:
+  user.to.proxy: tianyafu
+
 nodes:
   - name: spark_type_job
     type: spark
     config:
       master: yarn
-      execution-jar: ruozedata-homework-1.0.jar
-      class: com.tianya.bigdata.homework.day20200905.sparketlwithAccumulator.etl.SparkETL3
+      execution-jar: ruoze-homework-1.0.jar
+      class: com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.etl.SparkETL2
       deploy-mode: client
       name: spark_log_etl_on_cdh
-      jars: ip2region-1.7.2.jar,paranamer-2.8.jar,ip2region.db,mysql-connector-java-5.1.47.jar
+      jars: ip2region-1.7.2.jar,paranamer-2.8.jar,ip2region.db,mysql-connector-java-5.1.47.jar,scala-library-2.12.10.jar
       driver-memory: 2048M
       executor-memory: 2048M
       executor-cores: 2
@@ -16,6 +19,7 @@ nodes:
       conf.spark.dw.raw.path: /tmp/ruozedata/dw/raw/access
       conf.spark.dw.tmp.path: /tmp/ruozedata/dw/ods_tmp/access
       conf.spark.dw.ods.path: /tmp/ruozedata/dw/ods/access
+      conf.spark.dw.ods.access.path: /tmp/ruozedata/dw/ods/spark_access
       conf.spark.execute.time: ${dt}
   - name: hive_add_partition
     type: hive

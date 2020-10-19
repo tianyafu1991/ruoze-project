@@ -1,6 +1,6 @@
 package com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.etl
 
-import com.tianya.bigdata.homework.day20200901.sparketl.utils.FileUtils
+import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.FileUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -16,8 +16,10 @@ object ProvinceSQL2RDDApp {
 //    sc.hadoopConfiguration.set("dfs.replication","1")
 //    System.setProperty("HADOOP_USER_NAME","hadoop")
     val dt = args(0)
-    val inputPath = s"/ruozedata/dw/ods/access/d=$dt/part-r-00000"
-    val outputPath = s"/ruozedata/dw/ods/spark_access/d=$dt"
+    val odsPathConf: String = conf.get("spark.dw.ods.path", "/ruozedata/dw/ods/access")
+    val accessPathConf: String = conf.get("spark.dw.ods.access.path", "/ruozedata/dw/ods/spark_access")
+    val inputPath = s"${odsPathConf}/d=$dt/part-r-00000"
+    val outputPath = s"${accessPathConf}/d=$dt"
 
     FileUtils.delete(sc.hadoopConfiguration,outputPath)
 

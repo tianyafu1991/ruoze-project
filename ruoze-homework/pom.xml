@@ -40,11 +40,23 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-parser-combinators_2.12</artifactId>
+                    <groupId>org.scala-lang.modules</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -125,6 +137,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -166,6 +184,20 @@
             <groupId>org.scalikejdbc</groupId>
             <artifactId>scalikejdbc_${scala.binary.version}</artifactId>
             <scope>compile</scope>
+            <exclusions>
+                <!--<exclusion>
+                    <artifactId>scala-parser-combinators_2.12</artifactId>
+                    <groupId>org.scala-lang.modules</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-collection-compat_2.12</artifactId>
+                    <groupId>org.scala-lang.modules</groupId>
+                </exclusion>-->
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

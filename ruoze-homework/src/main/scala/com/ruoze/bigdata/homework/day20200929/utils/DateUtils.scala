@@ -5,8 +5,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.{Calendar, Date}
 
-import com.ruoze.bigdata.homework.day20200929.test.DateTimeUtilsTest.format
-import org.apache.spark.sql.catalyst.util.DateFormatter
 
 object DateUtils {
 

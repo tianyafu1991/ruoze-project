@@ -211,20 +211,68 @@ com.cloudera.cmf.db.user=cmf
 com.cloudera.cmf.db.password=Ruozedata0123!
 com.cloudera.cmf.db.setupType=EXTERNAL
 
+# 创建用户
+[root@ruozedata001 ~]# useradd --system --home=/opt/cloudera-manager/cm-5.16.2/run/cloudera-scm-server --no-create-home \
+> --shell=/bin/false --comment "cloudera scm user" cloudera-scm
+[root@ruozedata001 ~]# chown -R cloudera-scm:cloudera-scm /opt/cloudera-manager
+
+# Parcel离线部署
+[root@ruozedata001 ~]# cd cdh5.16.2/
+[root@ruozedata001 cdh5.16.2]# cp /home/hadoop/software/CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel .
+[root@ruozedata001 cdh5.16.2]# cp /home/hadoop/software/CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel.sha1 ./CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel.sha
+[root@ruozedata001 cdh5.16.2]# cp /home/hadoop/software/manifest.json .
+[root@ruozedata001 cdh5.16.2]# which sha1sum
+/usr/bin/sha1sum
+[root@ruozedata001 cdh5.16.2]# mkdir -p /opt/cloudera/parcel-repo
+[root@ruozedata001 cdh5.16.2]# mv CDH-5.16.2-1.cdh5.16.2.p0.8-el7.parcel* /opt/cloudera/parcel-repo
+[root@ruozedata001 cdh5.16.2]# mv manifest.json /opt/cloudera/parcel-repo
+[root@ruozedata001 cdh5.16.2]# chown -R cloudera-scm:cloudera-scm /opt/cloudera
+
+# 正式集群部署
+1.创建所有节点的软件安装目录 用户和用户组的权限
+[root@ruozedata001 cdh5.16.2]# mkdir -p /opt/cloudera/parcels
+[root@ruozedata001 cdh5.16.2]# chown -R cloudera-scm:cloudera-scm /opt/cloudera
+
+2.启动cm server
+[root@ruozedata001 cdh5.16.2]# cd /opt/cloudera-manager/cm-5.16.2/
+[root@ruozedata001 cm-5.16.2]# cd etc/init.d/
+[root@ruozedata001 init.d]# ll
+total 32
+-rwxr-xr-x 1 cloudera-scm cloudera-scm 8871 May 18  2019 cloudera-scm-agent
+-rwxr-xr-x 1 cloudera-scm cloudera-scm 8417 May 18  2019 cloudera-scm-server
+-rwxr-xr-x 1 cloudera-scm cloudera-scm 4444 May 18  2019 cloudera-scm-server-db
+
+[root@ruozedata001 parcel-repo]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-server start
+Starting cloudera-scm-server:                              [  OK  ]
+[root@ruozedata001 ~]# cd /opt/cloudera-manager/cm-5.16.2/log/cloudera-scm-server/
+[root@ruozedata001 cloudera-scm-server]# ll
+total 40
+-rw-r----- 1 root root 30287 Oct 19 09:21 cloudera-scm-server.log
+-rw-r--r-- 1 root root  7297 Oct 19 09:21 cloudera-scm-server.out
+-rw-r----- 1 root root     0 Oct 19 09:21 cmf-server-perf.log
+
+
+# 启动所有节点的agent
+
+[root@ruozedata001 parcel-repo]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent start
+Starting cloudera-scm-agent:                               [  OK  ]
+[root@ruozedata001 parcel-repo]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent status
+cloudera-scm-agent (pid  4843) is running...
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+# 关闭集群
+1.先在CM上停服务
+2.在CM上停CMS
+3.[root@ruozedata001 parcel-repo]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent stop
+4.[root@ruozedata001 parcel-repo]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-server stop
+5.[root@ruozedata001 parcel-repo]# su - mysqladmin
+  Last login: Mon Oct 19 11:59:18 CST 2020 on pts/0
+  ruozedata001:mysqladmin:/usr/local/mysql:>service mysql stop
+  Shutting down MySQL....[  OK  ]
+  rm: cannot remove '/var/lock/subsys/mysql': Permission denied
 
 
 

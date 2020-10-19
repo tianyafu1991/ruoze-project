@@ -5,7 +5,7 @@ import java.io.File;
 public class AddDenpendies {
 
     public static void main(String[] args) {
-        String template = "sudo ln -s /opt/cloudera/parcels/CDH/jars/%s $AZKABAN_EXECUTOR_HOME/extlib/%s";
+        String template = "sudo ln -s /opt/cloudera/parcels/SPARK2/lib/spark2/jars/%s $AZKABAN_EXECUTOR_HOME/extlib/%s";
         String path = args[0];
         File file = new File(path);
         if(file.isDirectory()){
