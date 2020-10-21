@@ -10,25 +10,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ruoze-homework</artifactId>
-    <!--<properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <hadoop.version>2.6.0-cdh5.16.2</hadoop.version>
-        <hive.version>1.1.0-cdh5.16.2</hive.version>
-        <spark.version>2.4.6</spark.version>
-        <scala.binary.version>2.12</scala.binary.version>
-        <flume.version>1.6.0-cdh5.16.2</flume.version>
-        <hbase.version>1.2.0-cdh5.16.2</hbase.version>
-        <zookeeper.version>3.4.5-cdh5.16.2</zookeeper.version>
-        <curator.version>4.0.0</curator.version>
-        &lt;!&ndash;        <jackson.version>2.8.11</jackson.version>&ndash;&gt;
-        <jackson.version>2.11.0</jackson.version>
-        <mysql.version>5.1.47</mysql.version>
-
-        &lt;!&ndash;scalikejdbc&ndash;&gt;
-        <scalikejdbc.version>3.4.0</scalikejdbc.version>
-    </properties>-->
 
     <dependencies>
 

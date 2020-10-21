@@ -1,4 +1,4 @@
-create external table default.ods_access(
+create external table ruozedata.ods_access(
 ip string ,
 proxyIp string ,
 responseTime bigint,
@@ -21,12 +21,12 @@ params string ,
 year string ,
 month string ,
 day string
-) comment '日志清洗表' partitioned by (d string comment '分区字段') row format delimited fields terminated by '\t' location '/tmp/ruozedata/dw/ods/access';
+) comment '日志清洗表' partitioned by (d string comment '分区字段') row format delimited fields terminated by '\t' location '/ruozedata/hive/dw/ods_access';
 
 
 
-create external table default.dwd_access_province_traffic(
+create external table ruozedata.dwd_access_province_traffic(
 province string,
 traffics int,
 cnt int
-) comment '省份流量表' partitioned by (d string comment '日期分区(yyyyMMdd)')  row format delimited fields terminated by '\t' location '/tmp/ruozedata/dw/dwd/access_province_traffic' ;
+) comment '省份流量表' partitioned by (d string comment '日期分区(yyyyMMdd)')  row format delimited fields terminated by '\t' location '/ruozedata/hive/dw/dwd/access_province_traffic' ;

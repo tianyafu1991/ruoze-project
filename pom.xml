@@ -19,11 +19,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <hadoop.version>2.6.0-cdh5.16.2</hadoop.version>
         <hive.version>1.1.0-cdh5.16.2</hive.version>
-<!--        <spark.version>2.4.6</spark.version>-->
-        <spark.version>2.3.0</spark.version>
+        <spark.version>2.4.6</spark.version>
+        <!--<spark.version>2.3.0</spark.version>-->
         <!--<spark.version>3.0.1</spark.version>-->
-<!--        <scala.binary.version>2.12</scala.binary.version>-->
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.binary.version>2.12</scala.binary.version>
+        <!--<scala.binary.version>2.11</scala.binary.version>-->
         <flume.version>1.6.0-cdh5.16.2</flume.version>
         <hbase.version>1.2.0-cdh5.16.2</hbase.version>
         <zookeeper.version>3.4.5-cdh5.16.2</zookeeper.version>
@@ -51,31 +51,9 @@
     </repositories>
 
     <dependencyManagement>
+
+
         <dependencies>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <!--            <scope>test</scope>-->
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-jdbc</artifactId>
-                <version>${hive.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-exec</artifactId>
-                <version>${hive.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -106,6 +84,33 @@
                 <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <!--            <scope>test</scope>-->
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+                <version>${hadoop.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-jdbc</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
+
+
 
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -171,17 +176,6 @@
                 <artifactId>curator-recipes</artifactId>
                 <version>${curator.version}</version>
             </dependency>
-
-            <!-- <dependency>
-                 <groupId>com.fasterxml.jackson.core</groupId>
-                 <artifactId>jackson-core</artifactId>
-                 <version>2.2.4</version>
-             </dependency>
-             <dependency>
-                 <groupId>com.fasterxml.jackson.core</groupId>
-                 <artifactId>jackson-databind</artifactId>
-                 <version>2.2.4</version>
-             </dependency>-->
 
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
