@@ -659,7 +659,8 @@ mysql.password=Ruozedata0123!
 [root@ruozedata003 jobtypes]# mv commonprivate.properties commonprivate.properties.bak
 [root@ruozedata003 jobtypes]# mv  ~/software/azkaban-jobtype-3.0.0/* ~/app/azkaban-exec-server/plugins/jobtypes/
 
-[root@ruozedata003 jobtypes]# vim common.properties 
+# 配置通用插件
+[root@ruozedata003 jobtypes]# vim common.properties
 # add by tianyafu
 hadoop.home=/opt/cloudera/parcels/CDH/lib/hadoop
 hive.home=/opt/cloudera/parcels/CDH/lib/hive
@@ -675,10 +676,12 @@ obtain.binary.token=false
 hadoop.home=/opt/cloudera/parcels/CDH/lib/hadoop
 hive.home=/opt/cloudera/parcels/CDH/lib/hive
 spark.home=/root/app/spark
-hadoop.classpath=${hadoop.home}/etc/hadoop,${hadoop.home}/client/*,${hive.home}/lib/*,${hive.home}/auxlib/*
-jobtype.global.classpath=${hadoop.home}/etc/hadoop,${hadoop.home}/client/*,${hive.home}/lib/*,${hive.home}/auxlib/*
 
-[root@ruozedata003 jobtypes]# vim hive/plugin.properties 
+hadoop.classpath=${hadoop.home}/etc/hadoop,${hadoop.home}/client/*
+jobtype.global.classpath=${hadoop.home}/etc/hadoop,${hadoop.home}/client/*
+
+# 配置hive插件
+[root@ruozedata003 jobtypes]# vim hive/plugin.properties
 # add by tianyafu
 hive.home=/opt/cloudera/parcels/CDH/lib/hive
 hive.aux.jars.path=${hive.home}/auxlib
@@ -690,6 +693,12 @@ hadoop.home=/opt/cloudera/parcels/CDH/lib/hadoop
 hive.home=/opt/cloudera/parcels/CDH/lib/hive
 jobtype.classpath=${hadoop.home}/etc/hadoop,${hadoop.home}/client/*,${hive.home}/lib/*,${hive.home}/conf,${hive.aux.jar.path}/*
 
+# 配置spark插件
+[root@ruozedata003 jobtypes]# vim spark/private.properties
+HADOOP_CONF_DIR=${hadoop.home}/etc/hadoop
+YARN_CONF_DIR=${hadoop.home}/etc/hadoop
+jobtype.classpath=${spark.home}/conf:${spark.home}/jars/*
+~
 
 修改启动脚本，防止日志到处都是
 [root@ruozedata003 app]# vim ~/app/azkaban-exec-server/bin/start-exec.sh 
@@ -709,6 +718,13 @@ script_dir=$(dirname $0)
 #${script_dir}/internal/internal-start-web.sh >webServerLog_`date +%F+%T`.out 2>&1 &
 ${script_dir}/internal/internal-start-web.sh >${script_dir}/../logs/webServerLog_`date +%F+%T`.out 2>&1 &
 
+
+# 在azkaban的启动脚本中添加一些自定义的classpath（这一步应该可以不要）
+[root@ruozedata002 internal]# vim /root/app/azkaban-exec-server/bin/internal/internal-start-executor.sh
+if [ "$AZKABAN_EXTLIB" != "" ]; then
+        echo "Using AZKABAN EXTLIB from $AZKABAN_EXTLIB"
+        CLASSPATH=$CLASSPATH:$AZKABAN_EXTLIB
+fi
 
 # 分发azkaban executor到ruozedata001和ruozedata002上
 
@@ -747,8 +763,8 @@ curl -G "ruozedata003:12321/executor?action=activate" && echo
 [root@ruozedata003 azkaban-exec-server]# ./bin/shutdown-exec.sh
 
 
-# 针对azkaban找不到hadoop等相关jar的问题
-
+# 针对azkaban找不到hadoop等相关jar的问题（这种方法不靠谱,而且切记：不要配置HADOOP_HOME和HIVE_HOME以及HADOOP_CLASSPATH，不要安装SCALA）
+```
 在/internal/internal-start-web.sh 中添加:
 [root@ruozedata003 azkaban-exec-server]# vim $AZKABAN_EXECUTOR_HOME/bin/internal/internal-start-executor.sh
 if [ "$HADOOP_CLASSPATH" != "" ]; then
@@ -771,7 +787,7 @@ export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HADOOP_HOME/lib/*:$HADOOP_HOME/client
 
 
 
-九、安装Scala
+九、安装Scala （不要安装SCALA）
 [root@ruozedata001 ~]# tar -xvf ~/software/scala-2.12.10.tgz -C ~/app/
 [root@ruozedata001 ~]# scp -r ~/app/scala-2.12.10 ruozedata002:/root/app/
 [root@ruozedata001 ~]# scp -r ~/app/scala-2.12.10 ruozedata003:/root/app/
@@ -779,11 +795,48 @@ export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HADOOP_HOME/lib/*:$HADOOP_HOME/client
 [root@ruozedata001 app]# ln -s scala-2.12.10 scala
 [root@ruozedata001 app]# echo -e '# SCALA ENV\nexport SCALA_HOME=/root/app/scala\nexport PATH=$SCALA_HOME/bin:$PATH' >> /etc/profile
 [root@ruozedata001 app]# source /etc/profile
-
-[root@ruozedata001 app]# source /etc/profile
-
+```
 
 
+
+
+开机启动
+[root@ruozedata001 ~]# su - mysqladmin
+
+ruozedata001:mysqladmin:/usr/local/mysql:>service mysql start
+
+[root@ruozedata001 ~]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-server start
+[root@ruozedata001 ~]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent start
+
+
+
+20190101
+
+启动
+[root@ruozedata003 app]# cd $AZKABAN_EXECUTOR_HOME
+[root@ruozedata003 azkaban-exec-server]# ./bin/start-exec.sh
+curl -G "ruozedata001:12321/executor?action=activate" && echo
+curl -G "ruozedata002:12321/executor?action=activate" && echo
+curl -G "ruozedata003:12321/executor?action=activate" && echo
+
+[root@ruozedata003 azkaban-exec-server]# cd $AZKABAN_WEB_HOME
+[root@ruozedata003 azkaban-web-server]# ./bin/start-web.sh
+
+关闭
+
+[root@ruozedata003 azkaban-web-server]# cd $AZKABAN_WEB_HOME
+[root@ruozedata003 azkaban-web-server]# ./bin/shutdown-web.sh
+
+[root@ruozedata003 azkaban-web-server]# cd $AZKABAN_EXECUTOR_HOME
+[root@ruozedata003 azkaban-exec-server]# ./bin/shutdown-exec.sh
+
+[root@ruozedata001 ~]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent stop
+[root@ruozedata001 ~]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-server stop
+
+[root@ruozedata001 ~]# su - mysqladmin
+ruozedata001:mysqladmin:/usr/local/mysql:>service mysql stop
+
+[root@ruozedata003 azkaban-exec-server]# vim $AZKABAN_EXECUTOR_HOME/plugins/jobtypes/spark/private.properties
 
 
 
