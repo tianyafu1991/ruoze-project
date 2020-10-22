@@ -1,0 +1,34 @@
+自我介绍
+
+
+1) google  有道		
+2) 服务器
+	VM/云主机  4C8G
+	CDH  云主机 按量收费
+	
+	
+	
+本地：Win、Mac、Linux
+JDK8/IDEA  旗舰版 社区版
+服务器：CentOS7.x
+	
+	
+群公告有Hadoop环境搭建的视频
+Hadoop进阶 
+Hive进阶
+Scala
+第一个离线项目
+HBase基础  J
+Spark Core
+Spark SQL
+Spark离线项目  X
+Kafka      J
+Spark Streaming  J
+Spark实时项目
+HBase进阶
+Spark综合项目
+Flink 
+CDH/HDP   J 
+调度平台   J 
+OLAP       Z
+容器       J 

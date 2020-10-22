@@ -1,0 +1,105 @@
+HDFS API
+
+
+IDEA + Maven
+IDE: IDEA  Eclipse
+
+	挑选jar lib  ==> classpath
+		==> jar冲突   吐血...
+
+构建工具：Maven Gradle
+
+Maven：xxx.apache.org
+
+
+Maven：https://mvnrepository.com/
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.49</version>
+</dependency>
+
+GAV 坐标
+
+
+IDEA整合Maven
+
+需要把Hadoop的依赖添加到pom.xml中
+	只要加一个依赖即可
+
+hadoop-2.6.0-cdh5.16.2	
+
+我们现在服务器和IDEA中都使用了相同的2.6.0-cdh5.16.2
+
+？？？？
+	server：2.6.0-cdh5.16.2
+	idea：2.6.0 2.7.0
+
+瘦包：仅仅包含源代码的
+
+
+
+模板方法模式
+	定义了一层骨架/步骤
+	
+	Before   busi   After
+
+
+在文件系统中，Path可以是一个具体的文件也可以是一个文件夹
+
+
+这是一个非常常见的基于云主机的异常
+hdfs-site.xml
+<property>
+	<name>dfs.datanode.use.datanode.hostname</name>
+	<value>true</value>
+</property>
+
+
+
+
+Configuration: 
+	core-default.xml,   
+	core-site.xml, 
+	hdfs-default.xml, 
+	hdfs-site.xml, 
+	mapred-default.xml, 
+	mapred-site.xml, 
+	yarn-default.xml, 
+	yarn-site.xml
+	
+	default就是jar里面自带的
+	site就是可以自己配置的
+
+补充：
+	参数我们是可以通过代码去设置
+	也可以通过配置文件的方式
+
+
+
+Java编程：驼峰标识
+数据库： _
+saveUser()
+
+ruozedata_user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

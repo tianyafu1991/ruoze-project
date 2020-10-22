@@ -1,0 +1,422 @@
+前置:
+1.【若泽大数据】CDH6.3.1企业集群真正离线部署(全网最细，配套视频和文档安装包，生产可实践)
+https://www.bilibili.com/video/BV1YE41117xM
+2. Linux基本功
+3. Hadoop基础（yarn队列）
+
+
+DBeaver
+课程介绍  dolphinscheduler   ds 
+
+1.大数据为什么需要调度
+因为大数据的任务多 复杂化  就会有不同的需求：
+单个任务
+串联 并联任务
+支持子节点、依赖节点
+拖拉拽
+shell脚本
+贴SQL
+数据抽取
+ETL工具
+任务失败重试机制  补数机制
+指定节点运行
+
+2.大数据调度有几多？
+crontab 支持秒级？不支持的 
+
+rundeck 企业版 免费版  封装shell脚本
+	https://www.rundeck.com/see-demo
+	https://www.bilibili.com/video/BV1Tb411c7nW
+		 
+		
+		 
+azkaban: https://azkaban.github.io/ 
+         https://azkaban.readthedocs.io/en/latest/useAzkaban.html#upload-projects
+	 https://ke.qq.com/course/238175?tuin=3d4b490e
+		 
+		
+
+airflow: http://airflow.apache.org/
+         http://airflow.apache.org/docs/stable/ui.html#
+		 
+		
+
+xxl-job: https://github.com/xuxueli/xxl-job
+	 https://www.xuxueli.com/xxl-job/
+	 https://www.v2ex.com/t/367424?p=1
+		 
+oozie:   http://oozie.apache.org/
+
+
+总结：xxl-job>rundeck/azkaban
+
+
+3.官网解读
+https://dolphinscheduler.apache.org/
+ds 
+
+kubernetes k8s
+
+https://dolphinscheduler.apache.org/zh-cn/docs/1.3.2/user_doc/quick-start.html
+
+
+4.集群部署
+1、基础软件安装(必装项请自行安装)
+CDH5.12.0
+jdk1.8
+mysql5.7
+zookeeper-3.4.5-cdh5.12.0
+
+
+2、下载二进制tar.gz包
+wget https://www.apache.org/dyn/closer.cgi/incubator/dolphinscheduler/1.3.2/apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin.tar.gz
+
+
+[root@ruozedata001 ~]# mkdir -p /ruozedata/software 
+[root@ruozedata001 ~]# mkdir -p /ruozedata/app
+
+[root@ruozedata001 ~]# tar -xzvf apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin.tar.gz  -C /ruozedata/software/
+
+[root@ruozedata001 ~]# cd /ruozedata/
+[root@ruozedata001 ruozedata]# cd software/
+[root@ruozedata001 software]# ll
+total 4
+drwxr-xr-x 9 root root 4096 Sep 17 21:59 apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin
+[root@ruozedata001 software]# ln -s apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin  dolphinscheduler-bin
+[root@ruozedata001 software]# ll
+total 8
+drwxr-xr-x 9 root root 4096 Sep 17 21:59 apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin
+lrwxrwxrwx 1 root root   61 Sep 17 22:00 dolphinscheduler-bin -> apache-dolphinscheduler-incubating-1.3.2-dolphinscheduler-bin
+[root@ruozedata001 software]# 
+
+
+3、创建部署用户和hosts映射
+
+# 创建用户需使用root登录，设置部署用户名，请自行修改，后面以hadoop为例
+useradd hadoop;
+
+# 设置用户密码，请自行修改，后面以dolphinscheduler123为例
+echo "ruozedata123" | passwd --stdin hadoop
+
+# 配置sudo免密
+echo 'hadoop  ALL=(ALL)  NOPASSWD: NOPASSWD: ALL' >> /etc/sudoers
+sed -i 's/Defaults    requirett/#Defaults    requirett/g' /etc/sudoers
+
+注意：
+ - 因为是以 sudo -u {linux-user} 切换不同linux用户的方式来实现多租户运行作业，所以部署用户需要有 sudo 权限，而且是免密的。
+ - 如果发现/etc/sudoers文件中有"Default requiretty"这行，也请注释掉
+ - 如果用到资源上传的话，还需要在`HDFS或者MinIO`上给该部署用户分配读写的权限
+
+4、配置hosts映射和ssh打通及修改目录权限
+三台机器：
+[root@ruozedata001 software]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+
+172.24.87.232 ruozedata001
+172.24.87.233 ruozedata002
+172.24.87.234 ruozedata003
+[root@ruozedata001 software]# 
+
+ssh 互相信任关系打通：
+su - hadoop
+......
+......
+
+验证
+ssh ruozedata001 date
+ssh ruozedata002 date
+ssh ruozedata003 date
+
+
+修改目录权限
+sudo chown -R hadoop:hadoop /ruozedata
+ll /ruozedata
+
+
+5、数据库初始化
+mysql-connector-java驱动包到DolphinScheduler的lib目录
+[hadoop@ruozedata001 ~]$ cd
+/ruozedata/software/dolphinscheduler-bin/lib
+[hadoop@ruozedata001 lib]$ 
+[hadoop@ruozedata001 lib]$ cp /usr/share/java/mysql-connector-java.jar  ./
+
+
+创建db和用户和赋予权限
+CREATE DATABASE rzdolphinscheduler DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+GRANT ALL PRIVILEGES ON rzdolphinscheduler.* TO 'hadoop'@'%' IDENTIFIED BY 'ruozedata123';
+GRANT ALL PRIVILEGES ON rzdolphinscheduler.* TO 'hadoop'@'localhost' IDENTIFIED BY 'ruozedata123';
+flush privileges;
+
+配置连接:  【！！！注意课程视频中拷贝时丢了第一行的首字母s，大家自己注意一下！！！】
+vi conf/datasource.properties
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.datasource.url=jdbc:mysql://ruozedata001:3306/rzdolphinscheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true
+spring.datasource.username=hadoop
+spring.datasource.password=ruozedata123
+
+执行:
+sh script/create-dolphinscheduler.sh
+
+22:25:31.500 [main] INFO org.apache.dolphinscheduler.dao.upgrade.shell.CreateDolphinScheduler - upgrade DolphinScheduler finished
+22:25:31.500 [main] INFO org.apache.dolphinscheduler.dao.upgrade.shell.CreateDolphinScheduler - create DolphinScheduler success
+
+=================================== 完成第一步准备工作
+
+6、修改运行参数
+[hadoop@ruozedata001 conf]$ cd env/
+[hadoop@ruozedata001 env]$ ll
+total 4
+-rw-rw-r-- 1 hadoop hadoop 1273 Aug 18 14:41 dolphinscheduler_env.sh
+[hadoop@ruozedata001 env]$ vi dolphinscheduler_env.sh 
+export HADOOP_HOME=/opt/cloudera/parcels/CDH/lib/hadoop
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export SPARK_HOME2=/var/lib/hadoop-hdfs/spark-work/spark
+export JAVA_HOME=/usr/java/jdk1.8.0_45
+export HIVE_HOME=/opt/cloudera/parcels/CDH/lib//hive
+export PATH=$HADOOP_HOME/bin:$SPARK_HOME2/bin:$JAVA_HOME/bin:$HIVE_HOME/bin:$PATH
+
+三台:
+sudo ln -s /usr/java/jdk1.8.0_45/bin/java /usr/bin/java
+==============================完成第二步准备工作
+
+修改一键部署配置文件 conf/config/install_config.conf中的各参数，特别注意以下参数的配置
+
+xml文件不要忘记
+[hadoop@ruozedata001 conf]$ ln -s /etc/hadoop/conf/core-site.xml core-site.xml
+[hadoop@ruozedata001 conf]$ ln -s /etc/hadoop/conf/hdfs-site.xml hdfs-site.xml
+[hadoop@ruozedata001 conf]$ 
+==============================完成第三步准备工作
+7、一键部署
+
+
+8、进程
+[hadoop@ruozedata001 dolphinscheduler-bin]$ jps
+29712 Jps
+29620 AlertServer
+29669 ApiApplicationServer
+29574 LoggerServer
+29526 WorkerServer
+29470 MasterServer
+[hadoop@ruozedata001 dolphinscheduler-bin]$ 
+
+[hadoop@ruozedata002 ~]$ jps
+5922 Jps
+5511 WorkerServer
+5815 ApiApplicationServer
+5753 LoggerServer
+5465 MasterServer
+[hadoop@ruozedata002 ~]$ 
+
+[hadoop@ruozedata003 ~]$ jps
+25236 WorkerServer
+25463 Jps
+25278 LoggerServer
+[hadoop@ruozedata003 ~]$ 
+
+http://ruozedata001:12345/dolphinscheduler
+
+admin/dolphinscheduler123
+
+
+
+
+5、快速上手
+去除后缀 dolphinscheduler ，通过nginx 
+https://dolphinscheduler.apache.org/zh-cn/docs/1.2.0/user_doc/cluster-deployment.html
+
+
+6、出色的地方
+6.1 hive的数据源操作，贴SQL
+建立数据源连接失败
+[ERROR] 2020-09-20 13:31:44.179 org.apache.dolphinscheduler.api.service.DataSourceService:[433] - Could not establish connection to jdbc:hive2://ruozedata002:10000/default: Required field 'client_protocol' is unset! Struct:TOpenSessionReq(client_protocol:null, configuration:{use:database=default})
+java.sql.SQLException: Could not establish connection to jdbc:hive2://ruozedata002:10000/default: Required field 'client_protocol' is unset! Struct:TOpenSessionReq(client_protocol:null, configuration:{use:database=default})
+        at org.apache.hive.jdbc.HiveConnection.openSession(HiveConnection.java:601)
+        at org.apache.hive.jdbc.HiveConnection.<init>(HiveConnection.java:172)
+        at org.apache.hive.jdbc.HiveDriver.connect(HiveDriver.java:107)
+        at java.sql.DriverManager.getConnection(DriverManager.java:664)
+        at java.sql.DriverManager.getConnection(DriverManager.java:247)
+        at org.apache.dolphinscheduler.api.service.DataSourceService.getConnection(DataSourceService.java:430)
+        at org.apache.dolphinscheduler.api.service.DataSourceService.checkConnection(DataSourceService.java:448)
+        at org.apache.dolphinscheduler.api.service.DataSourceService$$FastClassBySpringCGLIB$$8d6cb828.invoke(<generated>)
+        at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+        at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:684)
+        at org.apache.dolphinscheduler.api.service.DataSourceService$$EnhancerBySpringCGLIB$$eef25764.checkConnection(<generated>)
+        at org.apache.dolphinscheduler.api.controller.DataSourceController.connectDataSource(DataSourceController.java:284)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:497)
+        at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:189)
+        at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:138)
+        at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:102)
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895)
+        at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:800)
+        at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+        at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1038)
+        at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:942)
+        at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1005)
+        at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:908)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:707)
+        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:882)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+        at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:867)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1623)
+        at com.github.xiaoymin.swaggerbootstrapui.filter.SecurityBasicAuthFilter.doFilter(SecurityBasicAuthFilter.java:84)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at com.github.xiaoymin.swaggerbootstrapui.filter.ProductionSecurityFilter.doFilter(ProductionSecurityFilter.java:53)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:99)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:92)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:93)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:200)
+        at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+        at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1610)
+        at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:540)
+        at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+        at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+        at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+        at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1588)
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+        at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1345)
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+        at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:480)
+        at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1557)
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+        at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1247)
+        at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+        at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+        at org.eclipse.jetty.server.Server.handle(Server.java:502)
+        at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:364)
+        at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+        at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:305)
+        at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:103)
+        at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+        at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+        at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+        at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:765)
+        at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:683)
+        at java.lang.Thread.run(Thread.java:745)
+
+
+hive cdh的版本server端与ds hive client端 版本不一致
+三台机器:
+[hadoop@ruozedata001 ~]$ cd /ruozedata/app/dolphinscheduler/lib
+[hadoop@ruozedata001 lib]$ ll hive*
+-rw-r--r-- 1 hadoop hadoop  384969 Sep 20 13:03 hive-common-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop  109678 Sep 20 13:03 hive-jdbc-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop 7771689 Sep 20 13:03 hive-metastore-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop  684736 Sep 20 13:03 hive-orc-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop  915583 Sep 20 13:03 hive-serde-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop  483319 Sep 20 13:03 hive-service-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop 1538459 Sep 20 13:03 hive-service-rpc-2.1.0.jar
+-rw-r--r-- 1 hadoop hadoop  109259 Sep 20 13:03 hive-storage-api-2.1.0.jar
+[hadoop@ruozedata001 lib]$ 
+[hadoop@ruozedata001 lib]$ mv hive* /tmp
+
+cp /opt/cloudera/parcels/CDH/lib/hive/lib/hive-common-1.1.0-cdh5.12.0.jar ./
+cp /opt/cloudera/parcels/CDH/lib/hive/lib/hive-jdbc-1.1.0-cdh5.12.0.jar ./
+cp /opt/cloudera/parcels/CDH/lib/hive/lib/hive-metastore-1.1.0-cdh5.12.0.jar ./
+cp /opt/cloudera/parcels/CDH/lib/hive/lib/hive-serde-1.1.0-cdh5.12.0.jar ./
+cp /opt/cloudera/parcels/CDH/lib/hive/lib/hive-service-1.1.0-cdh5.12.0.jar  ./
+
+重启DS
+
+
+6.2 hive的脚本操作
+vi hive.sh
+#!/bin/bash
+
+SQL="select * from default.emp"
+
+echo "hive cli-----------------"
+hive -e "${SQL}"
+
+
+echo "hive beeline"
+/opt/cloudera/parcels/CDH/lib/hive/bin/beeline -u "jdbc:hive2://ruozedata002:10000/default" hive -e "${SQL}"
+
+
+注意:
+假如在beeline 无法打印，还是抛错“Required field 'client_protocol' is unset!”，私信若泽数据@J哥 约时间远程处理
+
+
+6.3 spark的数据源操作，贴SQL
+所有的work节点 部署spark2
+
+公众号：PK大数据  CDS  自定义的spark2部署 
+
+Apache spark 裸装部署 on yarn
+Apache spark with cdh5.12.0 编译的   
+腾讯课堂 https://ke.qq.com/course/302439?tuin=745cf6bf
+
+
+课程环境中：
+[hdfs@ruozedata002 ~]$ cd /var/lib/hadoop-hdfs/spark-work/spark
+[hdfs@ruozedata002 spark]$ cd conf
+[hdfs@ruozedata002 conf]$ ln -s /etc/hive/conf/hive-site.xml hive-site.xml
+
+
+[hdfs@ruozedata002 conf]$ cat spark-env.sh
+#!/usr/bin/env bash
+
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This file is sourced when running various Spark programs.
+# Copy it as spark-env.sh and edit that to configure Spark for your site.
+
+
+HADOOP_CONF_DIR=/etc/hadoop/conf
+
+
+启动spark thriftserver
+/var/lib/hadoop-hdfs/spark-work/spark/sbin/start-thriftserver.sh  \
+--hiveconf hive.server2.thrift.port=10001 \
+--master yarn-client \
+--driver-cores 1 \
+--driver-memory 1G \
+--executor-cores 1 \
+--executor-memory 1G \
+--num-executors 2
+
+
+--driver-cores 2 \
+--driver-memory 8G \
+--executor-cores 2 \
+--executor-memory 6G \
+--num-executors 6
+
+6.4 spark的脚本操作
+vi spark.sh
+#!/bin/bash
+
+SQL="select * from default.emp"
+
+echo "spark beeline"
+/var/lib/hadoop-hdfs/spark-work/spark/bin/beeline -u "jdbc:hive2://ruozedata002:10001/default" hive -e "${SQL}"

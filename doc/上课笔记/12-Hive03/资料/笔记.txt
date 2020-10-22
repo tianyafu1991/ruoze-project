@@ -1,0 +1,256 @@
+慢的任务   长尾作业
+
+nvl 
+concat/concat_ws
+case when/if
+	每个部门 性别所对应的人数
+	dept m  f
+	RD   2  1
+	QA   1  2   
+
+	M
+	F
+select 
+a.dept, m_cnt, f_cnt
+from
+(select dept, count(1) m_cnt from people where sex='M' group by dept) a
+join
+(select dept, count(1) f_cnt from people where sex='F' group by dept) b
+on a.dept = b.dept;
+
+
+
+select
+ename,sal, case deptno
+when 10 then 'A'
+when 20 then 'B'
+when 30 then 'C'
+else 'other' end
+from emp;
+
+select 
+dept,
+sum(case sex when 'M' then 1 else 0 end) m_cnt,
+sum(case sex when 'F' then 1 else 0 end) f_cnt
+from people
+group by dept;
+
+
+select 
+dept,
+sum(if(sex='M',1,0)) m_cnt,
+sum(if(sex='F',1,0)) f_cnt
+from people
+group by dept;
+
+RD,PK,M
+RD,RUOZE,M
+RD,WANQIAN,F
+QA,XINGXING,M
+QA,LISIDANNI,F
+QA,JINSHA,F
+
+RD,M PK|RUOZE
+RD,F WANQIAN
+
+select 
+concat(dept,",",sex), concat_ws("|",collect_list(name))
+from people
+group by dept,sex;
+
+
+page1   1,2,3
+page2   3,4,5
+
+
+page1 1
+page1 2
+page1 3
+page2 3
+page2 4
+page2 5
+
+
+select ad_id, count(1)
+from page_ads lateral view explode(ads) tmp as ad_id group by ad_id;
+a,b,1
+a,b,2
+a,b,3
+c,d,4
+c,d,5
+c,d,6
+
+a b 1
+a b 1
+
+
+
+CUME_DIST PERCENT_RANK
+
+
+
+select 
+dept,user,sal,
+round(PERCENT_RANK() over(order by sal),2) rn1,
+round(PERCENT_RANK() over(partition by dept order by sal),2) rn2
+from ruozedata_window02;
+
+小于等于当前行值的行数 /  分组内的总行数
+dept    user    		sal     rn1     rn2
+dept01  ruoze   		10000   0.2     0.3333333333333333   1/3
+dept01  jepson  		20000   0.4     0.6666666666666666   2/3
+dept01  xingxing        30000   0.6     1.0                  3/3
+dept02  zhangsan        40000   0.8     0.5
+dept02  lisi    		50000   1.0     1.0
+
+
+分组内当前行的rank-1/分组内总行数-1
+dept    user    		sal     rn1     		rn2
+dept01  ruoze   		10000   0.0  1-1/5-1   	0.0 1-1/3-1
+dept01  jepson  		20000   0.25 2-1/5-1  	0.5 2-1/3-1
+dept01  xingxing        30000   0.5     		1.0
+dept02  zhangsan        40000   0.75    		0.0
+dept02  lisi    		50000   1.0     		1.0
+
+
+lag lead
+
+select cookieid,time,url,
+lead(time, 1, '1970-01-01 00:00:00') over(partition by cookieid order by time) pre1,
+lead(time, 2) over(partition by cookieid order by time) pre2
+from ruozedata_window03;
+
+FIRST_VALUE
+LAST_VALUE
+
+select cookieid,time,url,
+LAST_VALUE(url) over(partition by cookieid order by time) rn
+from ruozedata_window03;
+
+
+
+
+订单数据
+求这个月你下的第一单 时间?
+求这个月你下的最后一单  时间?
+
+
+
+
+SQL(字符串而已) ==> Hive ==> MR/Tez/Spark 
+					  | 
+				  MetaStore
+
+
+
+QueryBlock  QB
+
+
+Antlr
+
+
+select * from emp;
+TableScanOperator
+ReduceSinkOperator
+JoinOperator
+MapJoinOperator
+SelectOperator
+FileSinkOperator
+FilterOperator
+GroupByOperator
+LimitOperator
+
+MR: 
+	common/shuffle/reduce
+	mapjoin
+	
+	
+	
+	
+explain select e.empno,e.ename,e.deptno, d.dname from emp e join dept d on e.deptno=d.deptno;	
+	
+	
+	
+select  /*+MAPJOIN(d)*/ from ...	
+	
+	
+	
+数据倾斜
+	Shuffle后，某个/些task处理的数据不均衡
+	Key分布不均匀
+	count sum
+	shuffle：group by/common join/count(distinct)
+	
+	现象： Reduce 90%... 
+	结果：
+		跑起来慢，但是能跑完    开心
+		跑不出来
+	原本原因：
+		
+	
+	
+	
+select * from a join b on a.id=b.id;	
+	id null
+	
+	where a.id is not null
+	union
+	null
+	
+不怕数据量大 就怕数据倾斜
+
+原来的sql： 3stage
+处理后的sql： 5stage	
+	
+	
+select * from a join b on a.id=b.id;	
+	
+	
+case when a.id is null then concat(x, rand()) else xxxx	
+	
+count(distinct id)	
+	
+	
+a.id	
+int 1
+"1"
+
+a.id = b.id
+1       "1"
+
+1 true TRUE
+0 false  FALSE
+
+
+""  null  "NULL" NULL 
+
+group by
+	双重  stage   stage
+
+hive.groupby.skewindata
+
+
+先打散再收敛
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

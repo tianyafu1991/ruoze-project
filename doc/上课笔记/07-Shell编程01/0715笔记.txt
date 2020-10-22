@@ -1,0 +1,335 @@
+基础： Linux命令
+
+1.脚本规范
+[root@ruozedata001 shell]# vi wc.sh
+#!/bin/bash
+
+echo "www.ruozedata.com"
+
+
+文件名称带.sh
+第一行解释器 #!/bin/bash
+
+
+
+执行：
+[root@ruozedata001 shell]# ll
+total 4
+-rw-r--r-- 1 root root 38 Jul 15 21:04 wc.sh
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# chmod u+x wc.sh 
+[root@ruozedata001 shell]# ll
+total 4
+-rwxr--r-- 1 root root 38 Jul 15 21:04 wc.sh
+[root@ruozedata001 shell]# ./wc.sh
+www.ruozedata.com
+[root@ruozedata001 shell]# /root/shell/wc.sh 
+www.ruozedata.com
+[root@ruozedata001 shell]# 
+
+[root@ruozedata001 shell]# chmod u-x wc.sh 
+[root@ruozedata001 shell]# ll
+total 4
+-rw-r--r-- 1 root root 38 Jul 15 21:04 wc.sh
+
+[root@ruozedata001 shell]# which sh
+/usr/bin/sh
+[root@ruozedata001 shell]# sh wc.sh 
+www.ruozedata.com
+[root@ruozedata001 shell]# 
+
+总结: 执行脚本  统一使用 sh  
+
+
+2.debug语法
+第一种:
+[root@ruozedata001 shell]# vi wc.sh 
+
+echo "www.ruozedata.com"
+
+k1=v1
+
+echo ${k1}
+
+exit 0
+
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# sh -x wc.sh 
++ echo www.ruozedata.com
+www.ruozedata.com
++ k1=v1
++ echo v1
+v1
++ exit 0
+[root@ruozedata001 shell]# 
+
+
+第二种:
+[root@ruozedata001 shell]# vi wc.sh 
+#!/bin/bash -x
+
+echo "www.ruozedata.com"
+
+
+k1=v1
+
+echo ${k1}
+
+exit 0
+
+开启场景： 开发 或者 生产上出现问题了 再开启 
+
+3.变量定义 应用
+[root@ruozedata001 shell]# vi  variable.sh
+#!/bin/bash
+
+RZ="data"
+D1="date"
+D2=`date`
+
+echo ${RZ}
+echo ${D1}
+echo ${D2}
+
+
+K=V
+
+总结:
+= 前后不能有空格
+赋值的变量名称大写
+使用的变量名称 习惯的使用{}
+静态:
+	K="V" 
+	K='V'
+	K=V
+
+动态:
+	K=`V`
+
+
+4.传递参数
+[root@ruozedata001 shell]# vi parameter.sh
+#!/bin/bash
+
+echo $1
+echo $2
+echo "$#"
+echo "$*"
+echo "PID: $$"
+
+[root@ruozedata001 shell]# sh parameter.sh a b
+a
+b
+2
+a b
+PID: 22231
+[root@ruozedata001 shell]# 
+
+
+5.数组
+[root@ruozedata001 shell]# vi array.sh
+#!/bin/bash
+
+ARR=(rz jepson xingxing huhu)
+
+echo ${ARR[@]}
+echo ${ARR[3]}
+echo ${#ARR[@]}
+
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# sh  array.sh 
+rz jepson xingxing huhu
+huhu
+4
+[root@ruozedata001 shell]# 
+
+6.if判断
+[root@ruozedata001 shell]# vi if.sh
+#!/bin/bash
+
+A="ABC"
+B="JEPSON"
+
+if [ ${A} == ${B} ];then
+        echo "=="
+else
+        echo "!="
+
+fi
+
+总结: 
+	a. [  ] 前后空格
+	b. ==   前后空格
+
+	建议: 学会 举一反三
+
+
+
+	
+
+作业: 数值判断、多种条件进行判断  且 或 
+
+
+7.循环  for  while
+
+[root@ruozedata001 shell]# vi forwhile.sh
+#!/bin/bash
+
+
+for  x in a b c d
+do
+        echo $x
+done
+
+
+
+for ((i=1;i<10;i++))
+do
+        echo $i
+done
+
+
+x=1
+while (($x<10))
+do
+        echo $x
+        let "x++"
+done
+
+8.分割字符串
+[root@ruozedata001 shell]# vi split.sh
+
+#!/bin/bash
+
+STR="RZ,JEPSON,XINGXING,HUHU"
+
+OLD_IFS="$IFS"
+IFS=","
+ARR=($STR)
+IFS="$OLD_IFS"
+
+echo ${ARR[*]}
+
+for x in ${ARR[*]}
+do
+        echo $x
+done
+
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# sh split.sh 
+RZ JEPSON XINGXING HUHU
+RZ
+JEPSON
+XINGXING
+HUHU
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+
+
+9.awk
+[root@ruozedata001 shell]# vi t.log
+a b c
+1 2 3
+
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# cat t.log  | awk '{print $1}'
+a
+1
+[root@ruozedata001 shell]# cat t.log  | awk '{print $1,$2}'
+a b
+1 2
+[root@ruozedata001 shell]# cat t.log  | awk '{print $1$2}'
+ab
+12
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# cat t.log  | awk 'NR==1{print}'
+a b c
+[root@ruozedata001 shell]# cat t.log  | awk 'NR==2{print}'
+1 2 3
+[root@ruozedata001 shell]# cat t.log  | awk 'NR>2{print}'
+[root@ruozedata001 shell]# cat t.log  | awk 'NR<=2{print}'
+a b c
+1 2 3
+[root@ruozedata001 shell]# cat t.log  | awk 'NR==2{print $2}'
+2
+[root@ruozedata001 shell]# 
+
+10.sed 替换
+[root@ruozedata001 shell]#  cat t.log
+a b c
+1 2 3
+[root@ruozedata001 shell]# sed -i 's/a/aa/' t.log 
+[root@ruozedata001 shell]# cat t.log 
+aa b c
+1 2 3
+[root@ruozedata001 shell]# 
+
+全局替换
+[root@ruozedata001 shell]# sed -i 's/a/w/g' t.log 
+[root@ruozedata001 shell]# cat t.log 
+ww b c
+1 2w 3w
+[root@ruozedata001 shell]# 
+
+
+
+[root@ruozedata001 shell]# vi t.log 
+w/w b c
+1 2w 3w
+
+[root@ruozedata001 shell]# sed -i 's///aaa/g' t.log 
+sed: -e expression #1, char 5: unknown option to `s'
+[root@ruozedata001 shell]# sed -i 's/\//aaa/g' t.log 
+[root@ruozedata001 shell]# 
+[root@ruozedata001 shell]# cat t.log 
+waaaw b c
+1 2w 3w
+[root@ruozedata001 shell]# 
+
+
+补充:
+exit 0  正常结束
+exit 1  异常结束 
+任何脚本开头必须加上  set -u，以后遇到不存在的变量，脚本直接中断运行
+公共的东西独立出来
+
+案例一: 脚本监控HDFS HA的状态变化
+
+
+hdfs getconf -confKey Key
+
+hdfs getconf -confKey dfs.namenode.rpc-address.nameservice1.namenode39
+
+
+10:00 执行
+[hdfs@ruozedata001 shell]$ sh get_hdfs_ha_state.sh 
+                                                                
+Hostname                Namenode_Serviceid              Namenode_State
+ruozedata001            namenode31              active
+ruozedata002            namenode109             standby
+[hdfs@ruozedata001 shell]$ 
+[hdfs@ruozedata001 shell]$ cat HDFS_HA.log
+ruozedata001           namenode31       active
+ruozedata002           namenode109        standby
+[hdfs@ruozedata001 shell]$ cat  HDFS_HA_LAST.log
+ruozedata001           namenode31       active
+ruozedata002           namenode109        standby
+[hdfs@ruozedata001 shell]$ 
+
+10:03 ha发生切换
+
+10:05 
+[hdfs@ruozedata001 shell]$ sh get_hdfs_ha_state.sh 
+                                                                
+Hostname                Namenode_Serviceid              Namenode_State
+ruozedata002            namenode109             active
+ruozedata001            namenode31              standby
+send a mail
+[hdfs@ruozedata001 shell]$ 
+

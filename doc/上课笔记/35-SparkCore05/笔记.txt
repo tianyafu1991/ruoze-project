@@ -1,0 +1,53 @@
+配置参数的优先级：
+	spark-defaults.conf  全局
+	spark-shell  --master   
+	代码级别
+	
+	"hdfs://ruozedata001:8020/ruozeinput.txt"
+	
+spark-submit \
+--class com.ruozedata.spark.basic.SparkWCClusterApp \
+--master yarn \
+/home/hadoop/lib/ruozedata-spark-core-1.0.jar \
+/ruozeinput.txt /spark-wc-out
+
+
+export HADOOP_CONF_DIR=/home/hadoop/app/hadoop-2.6.0-cdh5.16.2/etc/hadoop
+
+Standalone 
+	Master  Worker
+
+
+
+Application = Driver + Executor
+Driver: main + SparkContext
+Executor: runs tasks + Cache
+Each application has its own executors
+App1 = 10exe
+App2 = 10exe
+
+Job <== action
+
+Stage: shuffle
+reduceByKey
+
+
+val lines = sc.textFile("hdfs://ruozedata001:8020/ruozeinput.txt")
+val words = lines.flatMap(_.split("\t"))
+val wordOne = words.map((_,1))
+val result = wordOne.reduceByKey(_+_)
+result.saveAsTextFile("hdfs://ruozedata001:8020/wcout")
+
+
+HistoryServer
+
+
+Spark on YARN
+	MR ETL==>Spark ETL
+	province SQL ==> RDD
+
+
+
+
+
+	

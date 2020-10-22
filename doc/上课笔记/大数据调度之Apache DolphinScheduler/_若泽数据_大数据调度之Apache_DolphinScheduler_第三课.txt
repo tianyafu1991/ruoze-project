@@ -1,0 +1,125 @@
+1.暴露不足地方
+1.1 无法及时关联kill yarn job
+
+yarn application -kill  application_1602390531127_0008
+
+
+1.2 节点状态标识太鸡肋，需要自定义
+task运行的状态 
+
+exit 0 成功
+
+exit 1 失败
+
+task log 是 运行是失败，但是状态是成功的 
+
+log日志 自定义的高危词：error|fail
+
+二次开发：https://dolphinscheduler.apache.org/zh-cn/docs/development/development-environment-setup.html
+
+
+1.3 资源文件无法批量上传
+
+单个上传  花点时间呗
+
+
+1.4 缺少只读场景
+值班的人 厂商的人
+
+
+1.5 task instance not found 错误   
+https://github.com/apache/incubator-dolphinscheduler/issues/3011
+
+
+升级：https://dolphinscheduler.apache.org/zh-cn/docs/1.2.1/user_doc/upgrade.html
+
+
+2.总结
+2.1 解读github
+
+2.2 优化性能
+2.2.1.服务器
+进程 文件数
+echo "* soft nofile 960000" >> /etc/security/limits.conf
+echo "* hard nofile 960000" >> /etc/security/limits.conf
+echo "* soft nproc 960000" >> /etc/security/limits.conf
+echo "* hard nproc 960000" >> /etc/security/limits.conf
+
+重新登录,检查是否生效
+[root@ruozedata001 ~]# ulimit -a
+open files                      (-n) 960000
+max user processes              (-u) 960000
+
+网络、内核、进程能拥有的最多内存区域
+echo "net.core.somaxconn=32768" >> /etc/sysctl.conf
+echo "kernel.threads-max=196605" >> /etc/sysctl.conf
+echo "kernel.pid_max=196605" >> /etc/sysctl.conf
+echo "vm.max_map_count=393210" >> /etc/sysctl.conf
+
+#生效
+sysctl -p
+
+#swap 
+more /etc/sysctl.conf | vm.swappiness
+echo vm.swappiness = 0 >> /etc/sysctl.conf
+
+#生效
+sysctl -p
+
+#关闭大页面 
+echo never >> /sys/kernel/mm/transparent_hugepage/enabled
+echo never >> /sys/kernel/mm/transparent_hugepage/defrag
+
+
+2.2.2 master
+# master execute thread num
+#master.exec.threads=100
+
+# master execute task number in parallel
+#master.exec.task.num=20
+
+
+2.2.3 worker
+# worker execute thread num
+#worker.exec.threads=100
+
+2.2.4 mysql 连接数 
+
+
+2.3 备份
+元数据 mysql
+资源中心  脚本  sql  文本文件  jar 
+
+写shell脚本
+
+没有回收站  必须备份
+
+
+
+2.4 升级1.2.0 到1.3.2的坑
+找不到资源文件的 
+
+
+a.升级1.2.0 到1.3.2的坑: 工作流实例导出 删除 resourceList里面的内容 ，重新导入 再手动选择对应的资源 文件
+
+b.1.3.2的坑:
+{\"res\":\"jepson.txt\",\"name\":\"jepson.txt\",\"id\":14}
+
+{\"res\":\"jepson.txt\",\"name\":\"jepson.txt\",\"id\":15}
+
+
+c.资源的重新上传  是bug  无法覆盖 
+
+d.可以使用编辑模式 粘贴复制 
+
+e.hdfs上
+hdfs先rm 再put
+
+
+记住一点  资源更新  工作流执行时观察一下 是否被更新了
+
+
+
+2.5 基于rest api 增强ETL工作
+http://ruozedata001:12345/dolphinscheduler/doc.html?language=zh_CN&lang=zh
+

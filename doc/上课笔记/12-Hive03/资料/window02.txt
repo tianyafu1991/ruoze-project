@@ -1,0 +1,5 @@
+dept01,ruoze,10000
+dept01,jepson,20000
+dept01,xingxing,30000
+dept02,zhangsan,40000
+dept02,lisi,50000

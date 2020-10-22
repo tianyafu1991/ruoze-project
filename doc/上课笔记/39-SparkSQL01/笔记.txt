@@ -1,0 +1,136 @@
+Spark SQL
+	大数据的云化
+	
+SQL on Hadoop
+	Hive
+		Metastore
+		MR/Spark/Tez
+	Shark X	
+		让Hive运行在Spark之上
+	Spark SQL
+		一栈式
+	Flink SQL
+	ClickHouse
+		OLAP：列式、压缩、排序...
+	Phoenix： 架在HBase之上一个SQL引擎
+	Presto
+	Impala
+	...
+
+
+Spark SQL  ==> Spark
+Hive       ==> Hive
+		=> Hive on Spark   <== Hive
+				https://cwiki.apache.org/confluence/display/Hive/Hive+on+Spark
+				
+				
+				
+Hive: SQL ==> 对应的执行引擎的作业
+	MR 
+	Tez
+	Spark
+
+Spark on Hive  X
+
+
+
+Uniform Data Access
+	Connect to any data source the same way.
+		data source
+			mysql、oracle、hdfs(text、json、orc、parquet)、hbase
+			build-in 
+			自定义开发数据源   spark对接hbase
+		the same way
+			spark.read.format("json/text/orc/parquet/jdbc").load(path)
+			df.write.format("json/text/orc/parquet/jdbc").save()
+		emp in mysql   join  dept in hdfs
+
+
+SQL：
+	sql
+	jdbc
+	
+	
+	
+Spark SQL不仅仅是SQL，SQL只是其中的一个小小的功能而已
+Spark SQL还能够对接不同的数据源 *****
+处理结构化数据
+	
+	
+	
+	
+	
+Spark Session 
+	
+
+
+spark-shell/sql --jars ......
+
+
+$HIVE_HOME
+$SPARK_HOME
+
+Spark对接Hive：
+1) hive-site.xml
+2) mysql驱动
+
+
+SchemaRDD
+DataFrame
+Dataset
+
+type DataFrame = Dataset[Row]
+
+
+A Dataset is a distributed collection of data
+
+
+A DataFrame is a distributed collection of data organized into named columns.
+
+
+
+Hive： HDFS 
+
+create table....
+
+
+schema : id int, name string, age int
+
+
+named columns: column name  + column data type 
+
+
+
+id    name   age
+1     pk     30
+2     ruoze  31
+
+
+
+
+a data frame in R/Python
+	单机
+
+
+{"name":"Michael"}
+{"name":"Andy", "age":30}
+{"name":"Justin", "age":19}
+
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+
+
+
+
+
+
+
+	
+	

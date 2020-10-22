@@ -1,0 +1,338 @@
+1.hbase shell 常用命令
+hbase(main):001:0> help
+HBase Shell, version 1.2.0-cdh5.16.2, rUnknown, Mon Jun  3 03:50:06 PDT 2019
+Type 'help "COMMAND"', (e.g. 'help "get"' -- the quotes are necessary) for help on a specific command.
+Commands are grouped. Type 'help "COMMAND_GROUP"', (e.g. 'help "general"') for help on a command group.
+
+COMMAND GROUPS:
+  Group name: general
+  Commands: status, table_help, version, whoami
+
+  Group name: ddl
+  Commands: alter, alter_async, alter_status, create, describe, disable, disable_all, drop, drop_all, enable, enable_all, exists, get_table, is_disabled, is_enabled, list, locate_region, show_filters
+
+  Group name: namespace
+  Commands: alter_namespace, create_namespace, describe_namespace, drop_namespace, list_namespace, list_namespace_tables
+
+  Group name: dml
+  Commands: append, count, delete, deleteall, get, get_counter, get_splits, incr, put, scan, truncate, truncate_preserve
+
+  Group name: tools
+  Commands: assign, balance_switch, balancer, balancer_enabled, 
+  catalogjanitor_enabled, catalogjanitor_run, 
+  catalogjanitor_switch, close_region, compact, 
+  compact_mob, compact_rs, flush, 
+  is_in_maintenance_mode, major_compact, 
+  major_compact_mob, merge_region, move, 
+  normalize, normalizer_enabled, normalizer_switch, 
+  split, splitormerge_enabled, splitormerge_switch, 
+  trace, unassign, wal_roll, zk_dump
+
+  Group name: replication
+  Commands: add_peer, append_peer_tableCFs, disable_peer, 
+  disable_table_replication, enable_peer, 
+  enable_table_replication, get_peer_config, 
+  list_peer_configs, list_peers, list_replicated_tables, 
+  remove_peer, remove_peer_tableCFs, set_peer_tableCFs, 
+  show_peer_tableCFs, update_peer_config
+
+  Group name: snapshots
+  Commands: clone_snapshot, delete_all_snapshot, 
+  delete_snapshot, list_snapshots, restore_snapshot, snapshot
+
+  Group name: configuration
+  Commands: update_all_config, update_config
+
+  Group name: quotas
+  Commands: list_quotas, set_quota
+
+  Group name: security
+  Commands: grant, list_security_capabilities, revoke, user_permission
+
+  Group name: procedures
+  Commands: abort_procedure, list_procedures
+
+  Group name: visibility labels
+  Commands: add_labels, clear_auths, get_auths, list_labels, set_auths, set_visibility
+
+  Group name: rsgroup
+  Commands: add_rsgroup, balance_rsgroup, get_rsgroup, get_server_rsgroup, get_table_rsgroup, list_rsgroups, move_servers_rsgroup, move_tables_rsgroup, remove_rsgroup
+
+SHELL USAGE:
+Quote all names in HBase Shell such as table and column names.  Commas delimit
+command parameters.  Type <RETURN> after entering a command to run it.
+Dictionaries of configuration used in the creation and alteration of tables are
+Ruby Hashes. They look like this:
+
+  {'key1' => 'value1', 'key2' => 'value2', ...}
+
+and are opened and closed with curley-braces.  Key/values are delimited by the
+'=>' character combination.  Usually keys are predefined constants such as
+NAME, VERSIONS, COMPRESSION, etc.  Constants do not need to be quoted.  Type
+'Object.constants' to see a (messy) list of all constants in the environment.
+
+If you are using binary keys or values and need to enter them in the shell, use
+double-quote'd hexadecimal representation. For example:
+
+  hbase> get 't1', "key\x03\x3f\xcd"
+  hbase> get 't1', "key\003\023\011"
+  hbase> put 't1', "test\xef\xff", 'f1:', "\x01\x33\x40"
+
+The HBase shell is the (J)Ruby IRB with the above HBase-specific commands added.
+For more on the HBase Shell, see http://hbase.apache.org/book.html
+hbase(main):002:0> 
+
+
+ctrl+删除键
+
+
+
+hbase(main):004:0> drop_namespace 'ruozedata'
+0 row(s) in 0.0260 seconds
+
+hbase(main):005:0> create_namespace 'ruozedata'
+0 row(s) in 0.0160 seconds
+
+hbase(main):006:0> list_namespace
+NAMESPACE                                                                                                    
+default                                                                                                      
+hbase                                                                                                        
+ruozedata                                                                                                    
+3 row(s) in 0.0210 seconds
+
+hbase(main):007:0> list_namespace_tables  'ruozedata'
+
+
+
+
+
+
+
+hbase(main):007:0> create 'ruozedata:orderinfo', 'SKU','ORDER'
+0 row(s) in 1.4560 seconds
+
+=> Hbase::Table - ruozedata:orderinfo
+hbase(main):008:0> 
+
+hbase(main):011:0* describe 'ruozedata:orderinfo'
+Table ruozedata:orderinfo is ENABLED                                                                         
+ruozedata:orderinfo                                                                                          
+COLUMN FAMILIES DESCRIPTION                                                                                  
+{NAME => 'ORDER', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE',
+ DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => '
+true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}                                                       
+{NAME => 'SKU', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', D
+ATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'tr
+ue', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}                                                         
+2 row(s) in 0.1200 seconds
+
+hbase(main):012:0> 
+
+
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuName', '红心火龙果'
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuNum', '3'
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuPrice', '15'
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum', '45'
+put 'ruozedata:orderinfo', 'row1', 'ORDER:OrderCreateTime', '2020-10-10 00:00:00'
+
+
+scan 'ruozedata:orderinfo'
+hbase(main):017:0> scan 'ruozedata:orderinfo'
+ROW                          COLUMN+CELL                                                                     
+ row1                        column=ORDER:OrderCreateTime, timestamp=1598704434509, value=2020-10-10 00:00:00
+ row1                        column=SKU:SkuName, timestamp=1598704434355, value=\xE7\xBA\xA2\xE5\xBF\x83\xE7\
+                             x81\xAB\xE9\xBE\x99\xE6\x9E\x9C                                                 
+ row1                        column=SKU:SkuNum, timestamp=1598704434405, value=3                             
+ row1                        column=SKU:SkuPrice, timestamp=1598704434449, value=15                          
+ row1                        column=SKU:SkuSum, timestamp=1598704434489, value=45                            
+1 row(s) in 0.0190 seconds
+
+
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum', '4500'
+
+delete 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum'
+
+
+多版本
+alter 'ruozedata:orderinfo', NAME => 'SKU', VERSIONS => 3
+
+
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum', '1500'
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum', '2500'
+put 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum', '3500'
+
+get 'ruozedata:orderinfo', 'row1', {COLUMN => 'SKU:SkuSum',  VERSIONS => 3}
+
+delete 'ruozedata:orderinfo', 'row1', 'SKU:SkuSum'
+
+总结:
+1.scan查询必然是返回最新的一条
+2.版本为1的  数据假如先put 再被put 然后delete，那么就会把第一次的数据显示出来，就好比让下一个的数据冒出来
+思考：如何一劳永逸的删除  干净？
+
+3.多版本，通过get语法查询多条记录  某个金额的变化趋势
+
+
+
+
+2.code
+<dependency>
+  <groupId>org.apache.hbase</groupId>
+  <artifactId>hbase-client</artifactId>
+  <version>1.2.0</version>
+</dependency>
+
+
+resources文件夹和属性也是resources :  
+	core-site.xml
+	hdfs-site.xml
+	hbase-site.xml
+
+window/mac ：hosts 映射
+
+
+端口号：
+2181
+60000
+60010
+60020
+60030
+
+3.架构设计和读写流程
+【hbase读写不经过hmaster老大，对标hdfs读写流程】
+
+hmaster:
+负责table和region的管理
+regionserver的负载均衡  region分布
+region分裂和分裂后的region的分配
+regionserver挂了后的region的迁移
+
+
+hregionserver  rs
+负责数据的路由，数据的读写和持久化
+是hbase的处理和计算的单元
+负责region分裂
+rs要求和dn部署在一起
+
+
+zk:
+存储hbase:meta表的地址和master地址
+rs主动向zk注册，使得master随时感知rs的健康状态
+zk还有一个作用：避免master spof 单点故障
+
+hbase clinet：
+rpc机制 
+与master进行ddl管理类通信
+与rs进行dml数据操作类通信
+
+
+hlog:
+预写日志  write ahead log
+每个rs节点的所有region的写操作日志都存储在一个文件里。
+数据并非直接写hdfs，而是缓存 批量写。写完后在日志做标记。
+
+memstore:写缓存(读流程也有它)
+是一个有序的内存缓存区
+用户写的数据线放入memstore ，当写满了后flush成一个storefile   ？？？
+（存储时对应的就是HFile）。
+当storefile数量达到一个阈值，触发compact合并，
+将多个storefiles 合并一个storefile  (小合并)
+
+storefile:
+storefiles合并后逐步形成越来越大的storefile，
+当region内所有的storefiles(hfile)的总大小超过
+hbase.hregion.max.filesize=10G,就触发split，
+把当前的region分割2个region。父region下线，
+新的2个被master分配到合适的rs节点上，使得原先1个region的压力得以
+分到2个region上。
+
+
+<property>
+<name>hbase.hregion.max.filesize</name>
+<value>10737418240</value>
+<final>false</final>
+<source>hbase-default.xml</source>
+</property>
+
+
+blockcache：读缓存
+是rs级别，一个rs节点只有一个，在rs节点启动时完成block cache的初始化工作。
+
+
+4.meta表
+hbase(main):023:0* scan 'hbase:meta'
+
+ruozedata:orderinfo,,159870 column=info:regioninfo, timestamp=1598705138964, value={ENCODED => f21463475729c
+ 4096886.f21463475729c05805e 05805e732824c0e43bf, NAME => 'ruozedata:orderinfo,,1598704096886.f21463475729c05
+ 732824c0e43bf.              805e732824c0e43bf.', STARTKEY => '', ENDKEY => ''}                              
+ ruozedata:orderinfo,,159870 column=info:seqnumDuringOpen, timestamp=1598705138964, value=\x00\x00\x00\x00\x0
+ 4096886.f21463475729c05805e 0\x00\x00\x11                                                                   
+ 732824c0e43bf.                                                                                              
+ ruozedata:orderinfo,,159870 column=info:server, timestamp=1598705138964, value=ruozedata001:60020           
+ 4096886.f21463475729c05805e                                                                                 
+ 732824c0e43bf.                                                                                              
+ ruozedata:orderinfo,,159870 column=info:serverstartcode, timestamp=1598705138964, value=1598452076488       
+ 4096886.f21463475729c05805e                                                                                 
+ 732824c0e43bf.
+ 
+ [-无穷,+无穷]
+
+RowKey: table,region start key,region id
+ruozedata:orderinfo,,1598704096886.f21463475729c05805e732824c0e43bf.
+
+ruozedata:orderinfo
+
+1598704096886.f21463475729c05805e732824c0e43bf.
+region创建的时间戳.region id
+
+
+Values:
+info:regioninfo
+info:seqnumDuringOpen
+info:server   才是我们关心   表明这个region是分布在哪台机器的
+info:serverstartcode
+
+抽象:
+table region startkey  endkey  regionserver 
+t1    aaaa                     ruozedata001
+
+create 'ruozedata:orderinfo_split', 'f1', SPLITS => ['10', '20', '30']
+
+table region startkey  endkey  regionserver 
+t1    aaaa             10W      ruozedata001    <10w
+t1    bbbb   10w       20W      ruozedata002    [10w,20)
+t1    cccc   20w       30w      ruozedata003    [20w,30)
+t1    dddd   30w                ruozedata004	>=30w
+
+put 'ruozedata:orderinfo_split','1','f1:id','b'
+put 'ruozedata:orderinfo_split','10','f1:id','b'
+put 'ruozedata:orderinfo_split','30','f1:id','b'
+
+
+5.写流程
+1.先去zk获取hbase:meta表的rs节点
+2.在meta所在的rs节点，根据请求的rk确定所在的目标rs节点和region
+3.将写请求进行与对应的目标rs节点通信，rs接收到写请求，解析数据，
+先写wal，再写对应的region的列族store的memstore。
+4.当memstore某种触发，异步flush，内存数据写到storefile中。
+
+
+6.读流程
+1.先去zk获取hbase:meta表的rs节点
+2.在meta所在的rs节点，根据请求的rk确定所在的目标rs节点和region
+3.将读请求进行封装，发送给rs节点，rs接收到读请求，解析数据，
+先去memstore--》blockcache---》hfile查询
+
+注意：
+1.hbase一次范围查询可能涉及多个region 、多个缓存甚至多个hfile
+2.hbase的更新 删除是很简单实现。但是更新操作并没有真正的更新原数据，
+而是通过时间戳属性来实现多版本；删除操作也没有真正的删除原数据，
+而是插入一条标记为delete标签的数据。那么真正的数据上传是在hbase做
+大合并(full gc)。很显然，这种思路的设计：
+极大的简化更新 删除操作，但是对数据的读取却是非常的繁琐。
+而需要通过版本进行过滤和对已标记删除的数据也过滤。
+
+
+hbase:https://ke.qq.com/course/1583928?tuin=745cf6bf
+
+

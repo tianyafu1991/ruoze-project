@@ -1,0 +1,61 @@
+1.influxdb
+https://docs.influxdata.com/influxdb/v1.7/introduction/installation/
+
+service influxdb start
+
+<measurement>[,<tag-key>=<tag-value>...] <field-key>=<field-value>[,<field2-key>=<field2-value>...] [unix-nano-timestamp]
+
+INSERT cpu,host=serverA,region=us_west value=0.64
+
+insert into cpu(host,region,value) values(serverA,us_west,0.64)
+
+
+prewarning,host_service_logType=ruozedata001_namenode_INFO count=1
+
+2.PreWarningTest2 代码
+
+
+3.grafana
+https://grafana.com/docs/grafana/latest/getting-started/getting-started/
+
+https://grafana.com/grafana/plugins?utm_source=grafana_plugin_list
+
+https://grafana.com/grafana/dashboards
+
+
+wget https://dl.grafana.com/oss/release/grafana-7.2.2-1.x86_64.rpm 
+sudo yum install grafana-7.2.2-1.x86_64.rpm 
+
+sudo systemctl daemon-reload
+sudo systemctl start grafana-server
+sudo systemctl status grafana-server
+
+4.
+机器名称 服务名称 时间戳 日志级别  日志内容
+
+  sqlStr="SELECT hostName,serviceName,logType,COUNT(logType) " +
+                            "FROM prewarninglogs " +
+                            "GROUP BY hostName,serviceName,logType";
+
+日志内容： dead  oom  exception  shutdown  exit  timeout  waiting 等等的高危词
+
+mysql:
+
+CREATE TABLE `prewarning_config` (
+  `keywords` varchar(1024) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+print custom alert words:
+oom
+timeout
+prewarning,host_service_logType=ruozedata001_namenode_INFO count=20
+prewarning,host_service_logType=ruozedata001_namenode_alert count=2
+
+
+第二座作业:
+1.部署influxdb grafana 
+2.grafana 出图表数据  链路打通
+3.java代码 写一篇 ，scala写一篇，跑通
+4.优化点 collectAsList
+

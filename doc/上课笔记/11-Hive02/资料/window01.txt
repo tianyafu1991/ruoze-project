@@ -1,0 +1,7 @@
+ruozedata,2019-04-10,1
+ruozedata,2019-04-11,5
+ruozedata,2019-04-12,7
+ruozedata,2019-04-13,3
+ruozedata,2019-04-14,2
+ruozedata,2019-04-15,4
+ruozedata,2019-04-16,4

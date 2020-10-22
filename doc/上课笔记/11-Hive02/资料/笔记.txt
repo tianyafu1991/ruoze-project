@@ -1,0 +1,283 @@
+Hive优化
+	fetch
+		hive.fetch.task.conversion
+
+	本地
+		hive.exec.mode.local.auto
+
+	严格模式
+		hive.mapred.mode
+
+	推测式执行   
+		分布式执行引擎
+		hive.mapred.reduce.tasks.speculative.execution
+
+	裁剪
+		select ename,sal from xxx
+		hive.optimize.cp
+	谓词下推
+		hive.optimize.ppd
+
+		select a.*, b.* from a join b on a.id=b.id where b.age>20
+		看到的条件 提前执行 ==> 抛弃掉一些数据  然后再做后续的操作
+		
+		
+Hive  on MR
+
+	MapTask
+		nums？
+		文件的个数   文件大小   blocksize
+		如何来调整MapTask的数据
+			+
+			-
+			
+			mapreduce.input.fileinputformat.split.maxsize
+			一个文件128M？
+	ReduceTask
+		nums？
+		hive.exec.reducers.bytes.per.reducer   1
+		hive.exec.reducers.max                 2
+
+		min(参数2, 总数据量/参数1)
+		
+		set mapreduce.job.reduces=1;
+
+		
+
+
+
+
+
+ruozedata.com,2020-01-02,5
+ruozedata.com,2020-01-03,15
+ruozedata.com,2020-01-04,8
+ruozedata.com,2020-01-05,5
+ruozedata.com,2020-02-01,4
+ruozedata.com,2020-02-02,6
+ruozedata.com,2020-03-01,16
+ruozedata.com,2020-03-02,22
+
+ruoze.ke.qq.com,2020-01-01,5
+ruoze.ke.qq.com,2020-01-02,25
+ruoze.ke.qq.com,2020-02-01,10
+ruoze.ke.qq.com,2020-02-02,5
+ruoze.ke.qq.com,2020-03-01,23
+ruoze.ke.qq.com,2020-03-02,10
+ruoze.ke.qq.com,2020-03-03,11
+----------------------------------
+    域名         月份      当月次数     最大次数    总次数
+ruozedata.com   2020-01       33           33         33  
+ruozedata.com   2020-02       10           33         43
+ruozedata.com   2020-03       38           38         81
+
+1) group by
+2) 每个域名截止到每月   group 域名 月份
+3) max(pv)
+
+drop table access;
+create table access(
+domain string, day string, pv int)
+row format delimited fields terminated by ',';
+load data local inpath '/home/hadoop/data/interview/access.log' overwrite into table access;
+select * from access; 
+
+
+drop table access_tmp1;
+create table access_tmp1 as		
+select 
+domain, date_format(day, 'yyyy-MM') as month ,
+sum(pv) pv
+from access
+group by domain, date_format(day, 'yyyy-MM');
+		
+		
+drop table access_tmp2;
+create table access_tmp2 as	
+select 
+a.domain a_domain, a.month a_month, a.pv a_pv,
+b.domain b_domain, b.month b_month, b.pv b_pv
+from 
+access_tmp1 a join access_tmp1 b
+on a.domain = b.domain;	
+		
+		
+
+
+	
+
+
+
+
+
+ruozedata.com   2020-01 33
+ruozedata.com   2020-02 10
+ruozedata.com   2020-03 38
+
+ruoze.ke.qq.com 2020-02 15
+ruoze.ke.qq.com 2020-03 44
+ruoze.ke.qq.com 2020-01 30
+
+
+自连接
+
+
+a_domain       a_month a_pv      b_domain       b_month b_pv
+ruozedata.com   2020-01 33      ruozedata.com   2020-01 33
+
+ruozedata.com   2020-01 33      ruozedata.com   2020-02 10
+ruozedata.com   2020-02 10      ruozedata.com   2020-02 10
+
+ruozedata.com   2020-01 33      ruozedata.com   2020-03 38
+ruozedata.com   2020-02 10      ruozedata.com   2020-03 38
+ruozedata.com   2020-03 38      ruozedata.com   2020-03 38
+
+
+ruozedata.com   2020-02 10      ruozedata.com   2020-01 33
+ruozedata.com   2020-03 38      ruozedata.com   2020-01 33
+ruozedata.com   2020-03 38      ruozedata.com   2020-02 10
+
+1月要的数据：1月自身的
+2..........: 1月和2月的
+3..........: 1月、2月和3月的
+
+select 
+t.b_domain, t.b_month, t.b_pv,
+max(a_pv) max_pv,
+sum(a_pv) sum_pv
+from 
+(select * from access_tmp2 where a_month <= b_month) t
+group by t.b_domain, t.b_month, t.b_pv;
+
+
+ruozedata.com   2020-01 33      33      33
+ruozedata.com   2020-02 10      33      43
+ruozedata.com   2020-03 38      38      81
+
+
+ruozedata.com   2020-01       33           33         33  
+ruozedata.com   2020-02       10           33         43
+ruozedata.com   2020-03       38           38         81
+
+
+
+select 
+t.b_domain, t.b_month, t.b_pv,
+max(a_pv) max_pv,
+sum(a_pv) sum_pv
+from 
+(select * from access_tmp2 where a_month <= b_month) t
+group by t.b_domain, t.b_month, t.b_pv;
+
+
+with t as(select domain, date_format(day, 'yyyy-MM') as month, sum(pv) pv from access group by domain, date_format(day, 'yyyy-MM'))
+select 
+b.domain, b.month, b.pv,
+max(a.pv) max_pv,
+sum(a.pv) sum_pv
+from t a join t b 
+on a.domain=b.domain 
+where a.month <= b.month
+group by b.domain, b.month, b.pv;
+
+
+
+
+hive: mr  tez  spark
+
+SQL Boy
+	窗口函数 
+		窗口 ：函数运行/计算时 所对应的数据集范围
+		函数 ：执行的函数
+
+
+select 
+domain, time, traffic,
+sum(traffic) OVER (partition by domain order by time) pv1,
+sum(traffic) OVER (partition by domain order by time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) pv2,
+sum(traffic) OVER (partition by domain)  pv3,
+sum(traffic) OVER (partition by domain order by time  ROWS BETWEEN 3 PRECEDING AND CURRENT ROW)  pv4,
+sum(traffic) OVER (partition by domain order by time  ROWS BETWEEN 3 PRECEDING AND 1 FOLLOWING)  pv5,
+sum(traffic) OVER (partition by domain order by time  ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)  pv6
+from ruozedata_window
+order by time;
+
+
+domain  		time    	traffic 	pv1     pv2     pv3     pv4     pv5     pv6
+ruozedata       2019-04-10      1       1       1       26      1       6       26
+ruozedata       2019-04-11      5       6       6       26      6       13      25
+ruozedata       2019-04-12      7       13      13      26      13      16      20
+ruozedata       2019-04-13      3       16      16      26      16      18      13
+ruozedata       2019-04-14      2       18      18      26      17      21      10
+ruozedata       2019-04-15      4       22      22      26      16      20      8
+ruozedata       2019-04-16      4       26      26      26      13      13      4
+
+
+
+NTILE
+
+select 
+domain, time, traffic,
+NTILE(2) OVER (partition by domain order by time) rn1,
+NTILE(3) OVER (partition by domain order by time) rn2,
+NTILE(4) OVER (order by time) rn3
+from ruozedata_traffic
+order by domain,time;
+
+
+select 
+domain, time, traffic,
+NTILE(4) OVER (order by time) rn3
+from ruozedata_traffic
+order by domain,time;
+
+nlite: 将分组数据按照顺序进行切n片
+
+domain  		time    	traffic   rn1     rn2     rn3
+gifshow.com     2019-04-10      1       1       1       1
+gifshow.com     2019-04-11      5       1       1       1
+gifshow.com     2019-04-12      7       1       1       2
+gifshow.com     2019-04-13      3       1       2       2
+gifshow.com     2019-04-14      2       2       2       3
+gifshow.com     2019-04-15      4       2       3       3
+gifshow.com     2019-04-16      4       2       3       4
+yy.com  		2019-04-10      2       1       1       1
+yy.com  		2019-04-11      3       1       1       1
+yy.com  		2019-04-12      5       1       1       2
+yy.com  		2019-04-13      6       1       2       2
+yy.com  		2019-04-14      3       2       2       3
+yy.com  		2019-04-15      9       2       3       4
+yy.com  		2019-04-16      7       2       3       4
+
+
+ROW_NUMBER  from 1
+RANK        排名相同 总数不变
+DENSE_RANK  排名相同 总数变少
+
+select 
+domain, time, traffic,
+ROW_NUMBER() OVER (partition by domain order by traffic desc) rn1,
+RANK() OVER (partition by domain order by traffic desc) rn2,
+DENSE_RANK() OVER (partition by domain order by traffic desc) rn3
+from ruozedata_traffic;
+
+
+domain  time    	traffic   rn1     rn2     rn3
+yy.com  2019-04-15      9       1       1       1
+yy.com  2019-04-16      7       2       2       2
+yy.com  2019-04-13      6       3       3       3
+yy.com  2019-04-12      5       4       4       4
+yy.com  2019-04-14      3       5       5       5
+yy.com  2019-04-11      3       6       5       5
+yy.com  2019-04-10      2       7       7       6
+
+
+
+
+
+
+
+
+
+
+
+https://databricks.com/blog/2015/07/15/introducing-window-functions-in-spark-sql.html

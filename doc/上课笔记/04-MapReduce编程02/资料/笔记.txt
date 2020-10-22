@@ -1,0 +1,198 @@
+MR
+	MapTask
+	ReduceTask 
+		==> JVM 
+	
+	分而治之
+	Map 必须   Reduce 不一定
+
+	Map
+		Mapper<?,?,?,?>
+		map()
+		MapTask
+		setup
+		cleanup
+	
+	
+	Reduce
+		Reducer<?,?,?,?>
+		reduce
+		ReduceTask
+
+	Driver
+		map
+		reduce
+		inputpath
+		outputpath
+		inputformat
+		outputformat
+		mapoutkey
+		mapoutvalue
+		outkey
+		outvalue
+		class
+		
+	outputpath  不能存在的	
+		
+	hadoop jar xxxx.jar mainclass input  output
+		
+	job执行流程
+
+
+
+内置：build-in
+	Text
+	IntWritable
+	LongWriable
+	...
+
+序列化：内存的对象转成字节数组  以便于存储或者网络的数据传输
+	A   JVM  
+	B   JVM
+	C   JVM 
+	..
+	N   JVM
+
+反序列化： 字节数组转成对象
+
+
+Java中的序列化：重量级
+
+Writable
+
+
+
+
+第二个字段：手机号
+倒数第三个字段：上行流量
+倒数第二个字段：下行流量
+
+==> 统计每个手机号所耗费的上行流量之和、下行流量之和、总流量之和
+
+Map <LongWritable, Text, Text, Access>
+	按照分隔符进行拆分 \t
+	得到：手机号、上行流量、下行流量
+	统计每个手机号对应的信息：
+	Access：手机号、上行流量、下行流量、总流量
+
+Reduce <Text, Access, NullWritable, Access>
+	value是我们要关注的
+	key其实呢 我们可以不care
+
+
+
+java.lang.Exception: java.lang.RuntimeException: 
+java.lang.NoSuchMethodException: 
+com.ruozedata.bigdata.mapreduce.ser.AccessDriver$MyMapper.<init>()
+
+
+java.lang.Exception: java.lang.RuntimeException: 
+java.lang.NoSuchMethodException: 
+com.ruozedata.bigdata.mapreduce.ser.Access.<init>()
+
+指的就是没有默认无参的构造器
+
+
+自定义序列化类实现步骤
+	实现Writable
+	重写write和readFields
+	要有一个默认无参构造器
+	序列化方法和反序列化方法里面的读写顺序一定要一致
+	输出结果：重写toString
+	那么该类就可以作为MapReduce中任意的KEY和VALUE的类型来使用了。
+
+
+Input ==> Mapper ==> Shuffle  ==> Reducer  ==> Output
+	input  work? 如何读进来的？
+	Input： InputFormat
+
+
+InputFormat
+	List<InputSplit> getSplits
+		==> InputSplit 交给一个Map来处理
+		Logically split the set of input files for the job. 
+			逻辑：InputSplit不是真正对应一个物理上面的东西
+			物理：Block
+		RecordReader	
+		
+	RecordReader<K,V> createRecordReader(InputSplit split)
+	
+	
+	
+public class TextInputFormat extends FileInputFormat<LongWritable, Text>
+
+输入数据 ==> InputFormat
+					==> 有几个InputSplit
+						==> MapTask
+					==> RecordReader
+						==> LineRecordReader
+						
+	
+在工作中，开发是并行的
+	数据接入：准备好数据
+		数据格式规范的：第一个字段是什么  分隔符是什么  第二个字段是什么
+		但是不一定有真实数据给你的
+
+	功能开发：和数据接入是并行的
+		造数据 ***** 
+			pk,pk,xingxing
+
+
+179M / 32M = 6
+
+class org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+
+
+
+long minSize = Math.max(getFormatMinSplitSize(), getMinSplitSize(job));
+	max(1,1) = 1
+long maxSize = getMaxSplitSize(job);
+	0x7fffffffffffffffL
+
+splitSize = Math.max(minSize, Math.min(maxSize, blockSize));
+
+	max(1, min(32M, 0x7fffffffffffffffL))
+	max(1, 32M) = 32M
+
+SPLIT_SLOP = 1.1
+while (((double) bytesRemaining)/splitSize > SPLIT_SLOP) {
+	
+}
+
+blocksize 128M
+一个文件129M 会被拆分成几个InputSplit
+
+
+1,2,3,4,5,6,7...100
+128M 
+
+
+
+
+KeyValueTextInputFormat
+NLineInputFormat
+TextInputFormat
+
+文件中每一行的第一个单词相同的行数   ==> 变相的WC
+	Mapper<LongWritable,Text, Text,IntWritable>
+		按照,分割，取出第一个单词
+		(word, 1)
+	
+	Reducer<Text,IntWritable,Text,IntWritable>
+
+
+java.lang.Exception: java.lang.RuntimeException: 
+java.lang.NoSuchMethodException: 
+com.ruozedata.bigdata.mapreduce.inputformat.
+KeyValueTextInputFormatDriver$MyReducer.<init>()
+
+
+
+
+
+
+
+
+ 
+
+	

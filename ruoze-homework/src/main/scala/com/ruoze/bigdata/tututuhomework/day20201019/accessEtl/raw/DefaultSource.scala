@@ -13,7 +13,12 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
 
   //SchemaRelationProvider要实现的方法
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
-    null
+    val path: Option[String] = parameters.get("path")
+
+    path match {
+      case Some(p) => new RawAccessRelation(sqlContext,p,schema)
+      case _ => throw new IllegalArgumentException("path is not exists....")
+    }
   }
 
   //CreatableRelationProvider要实现的方法

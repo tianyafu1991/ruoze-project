@@ -1,0 +1,61 @@
+全排序
+	保证你的输出是完整的
+	全局排序
+		reducer:  
+			10  9  5
+			3 2 1
+	只有一个reduce
+	order by
+分区/局部排序
+	能够保证每个reducer的输出是有序的
+	sort by
+二次排序
+	几个条件
+
+select  
+e.empno,e.ename,d.name
+from
+emp e join dept d
+on e.deptno = d.deptno
+
+e.empno,e.ename,e.deptno
+d.deptno,d.name
+
+map输出的key value
+
+
+map ==> emp ==> ??? 
+map ==> dept ==> ???
+
+ReduceJoin/ShuffleJoin/CommonJoin 真正的join是在Reducer端完成的
+	必然是有shuffle
+	
+以join条件作为map数据的key，不同来源的数据需要打上一个标签
+经过shuffle，相同key的数据会落到一个reduce里面
+我们的join操作就是reduce端完成
+==> 数据倾斜
+
+
+数据倾斜产生的根据原因是：相同key的数据会落到一个reduce里面
+	key分布不均匀
+	
+
+MapJoin：join真正是在map端完成的，也就是说没有reducer，必然就没有shuffle
+	前提：只适合大表join小表
+	实现原理：把小表的数据加到缓存中，
+		在读取大表的一行数据时，直接根据join的条件 去缓存中匹配
+
+
+select deptno, count(1) from emp group by deptno;
+
+map: <deptno,1>
+reducer: <deptno, <1,1,1>>
+
+
+
+
+
+
+
+
+

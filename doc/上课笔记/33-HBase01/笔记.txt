@@ -1,0 +1,193 @@
+一.简单介绍和特性
+http://hbase.apache.org/
+
+http://hbase.group/
+
+公众号  hbasegroup
+a distributed, scalable, big data store.
+random, realtime read/write access to your Big Data.
+billions of rows X millions of columns -- 动态列
+
+Google's Bigtable
+
+Strictly consistent reads and writes.
+Automatic and configurable sharding of tables
+Automatic failover support between RegionServers.
+
+Easy to use Java API for client access. ？==》+Phoenix  支持SQL 
+
+
+二.版本
+0.98 
+1.6.0 
+2.3.1
+
+http://archive.cloudera.com/cdh5/cdh/5/
+
+	hbase
+CDH5.x  1.2.0 
+CDH6.x  2.1.0
+搜索： hbase-1.2.0-cdh5.16.2  10个命中  txt文件
+
+hadoop3.x hbase2.x 
+
+担忧：hbase  hadoop 
+
+src导入idea 打补丁的 替换的
+
+hbase致命的问题，通过 apache issue网站搜索该issue有pacth文件
+或者解决代码方案，那么再去看 txt文件 应该是没有打过这个补丁的，再次确认。
+然后src导入idea  ，根据补丁文件，修正代码，编译jar  替换jar  维护时间 重启 
+https://issues.apache.org/
+https://issues.apache.org/jira/secure/Dashboard.jspa
+
+hadoop-2.6.0-cdh5.16.2
+zookeeper-3.4.5-cdh5.16.2
+hbase-1.2.0-cdh5.16.2 3
+
+
+
+
+拓展：
+PATCH文件如何生成
+IDEA如何导入PATCH文件 打补丁
+
+
+
+三.部署
+hdfs 部署完成
+zk  部署完成
+
+hbase 
+[hadoop@ruozedata001 app]$ ll
+total 8
+lrwxrwxrwx  1 hadoop hadoop   22 May  6 22:17 hadoop -> hadoop-2.6.0-cdh5.16.2
+drwxr-xr-x 16 hadoop hadoop 4096 May  9 21:43 hadoop-2.6.0-cdh5.16.2
+lrwxrwxrwx  1 hadoop hadoop   25 Aug 26 22:05 zookeeper -> zookeeper-3.4.5-cdh5.16.2
+drwxr-xr-x 14 hadoop hadoop 4096 Aug 26 22:07 zookeeper-3.4.5-cdh5.16.2
+[hadoop@ruozedata001 app]$ cd ../
+[hadoop@ruozedata001 ~]$ cd software/
+[hadoop@ruozedata001 software]$ ll
+total 1733628
+-rw-r--r--  1 hadoop hadoop 434354462 Feb 24  2020 hadoop-2.6.0-cdh5.16.2.tar.gz
+drwxr-xr-x 31 hadoop hadoop      4096 Jun  3  2019 hbase-1.2.0-cdh5.16.2
+-rw-r--r--  1 hadoop hadoop 269046588 Aug 26 11:52 hbase-1.2.0-cdh5.16.2.tar.gz
+-rw-r--r--  1 hadoop hadoop 128800223 Feb 25  2020 hive-1.1.0-cdh5.16.2.tar.gz
+-rw-r--r--  1 hadoop hadoop 185646832 Feb 24  2020 jdk-8u181-linux-x64.tar.gz
+-rw-r--r--  1 hadoop hadoop 173271626 Jul 24  2019 jdk-8u45-linux-x64.gz
+-rw-r--r--  1 hadoop hadoop 548193637 Feb 24  2020 mysql-5.7.11-linux-glibc2.5-x86_64.tar.gz
+-rw-r--r--  1 hadoop hadoop  35905107 Jun 18  2019 zookeeper-3.4.5-cdh5.16.2.tar.gz
+[hadoop@ruozedata001 software]$ mv hbase-1.2.0-cdh5.16.2 ../app/
+[hadoop@ruozedata001 software]$ cd ../app
+[hadoop@ruozedata001 app]$ ln -s hbase-1.2.0-cdh5.16.2/ hbase
+[hadoop@ruozedata001 app]$ ll
+total 12
+lrwxrwxrwx  1 hadoop hadoop   22 May  6 22:17 hadoop -> hadoop-2.6.0-cdh5.16.2
+drwxr-xr-x 16 hadoop hadoop 4096 May  9 21:43 hadoop-2.6.0-cdh5.16.2
+lrwxrwxrwx  1 hadoop hadoop   22 Aug 26 22:08 hbase -> hbase-1.2.0-cdh5.16.2/
+drwxr-xr-x 31 hadoop hadoop 4096 Jun  3  2019 hbase-1.2.0-cdh5.16.2
+lrwxrwxrwx  1 hadoop hadoop   25 Aug 26 22:05 zookeeper -> zookeeper-3.4.5-cdh5.16.2
+drwxr-xr-x 14 hadoop hadoop 4096 Aug 26 22:07 zookeeper-3.4.5-cdh5.16.2
+[hadoop@ruozedata001 app]$ 
+[hadoop@ruozedata001 conf]$ vi hbase-env.sh
+export JAVA_HOME=/usr/java/jdk1.8.0_181
+export HBASE_MANAGES_ZK=false
+
+
+
+mysql-->maxwell-->kafka-->ss+phoenix-->hbase-->es
+
+协处理器 ：触发器 
+
+
+[hadoop@ruozedata001 conf]$ vi hbase-site.xml
+[hadoop@ruozedata001 conf]$ vi regionservers 
+ruozedata001
+  
+
+[hadoop@ruozedata001 conf]$ ../bin/start-hbase.sh 
+
+[hadoop@ruozedata001 conf]$ jps
+
+25026 HMaster		老大 
+25181 HRegionServer     小弟
+[hadoop@ruozedata001 conf]$ 
+
+
+http://114.67.101.143:60010/master-status
+
+四.表概念
+4.1 表的组成
+rowkey ：主键,rk
+column family: 列簇 列族，cf   将表竖向切割
+column: 列  ，必然属于一个cf
+version number：long类型 默认是系统时间戳  用户也自定义
+value: 存储的值
+
+
+一行row的数据 可以包含1个或者多个CF，一个CF可以多个C
+一个C只属于一个CF。
+CF个数 建议值不要超过3个。
+
+
+4.2 region
+一段数据的集合
+regionserver(rs) :从节点 用于存放region的服务
+
+在数据的物理层面来说，所有数据都是存放在region里的，
+而region又是由rs管理
+	一个rs管理一个或多个region，一个region管理一个或多个cf
+
+在数据的逻辑层面来说，表是按照rk的范围切分不同的region，
+region按照cf列族划分不同的store，
+store中包含一个memstore 和 1或多个storefile文件
+	建表时默认只有一个region，如果指定了split rowkey，
+	就会有多个region。当表的数据量达到阈值，表按水平切分2个region。
+	可以把region当成子表。 当region的行数超过阈值，region也会split。
+	不同的region被hmaster分配给适当的regionserver管理。
+
+
+4.3 数据模型--逻辑视图
+整个数据是由rk，按【字典顺序】进行排序
+a
+ab
+abc
+abcd
+b
+c
+d
+e
+f
+null值在hbase是不存的
+整个表以稀疏表方式存储 
+整个数据按rk进行字典排序，然后横向切割。
+切割的数据存储在region你们。 
+
+4.4 数据模型--物理视图
+K-V结构存储
+每个K-V只存储一个单元格cell的数据
+不同的cf的数据是存储在不同的文件里
+
+4.5 数据模型--物理视图--多版本
+将row2的skuname的 从 红心火龙果 更新为 白心火龙果
+
+底层实际是存储2条，这2条的版本是不一样的，最新的一条的版本大于之前的版本。
+总结：
+hbase支持多版本特性，通过带不同的时间戳来维护多个kv版本
+每次的put(新增也是更新)  delete 都会产生一个新的cell，都拥有一个版本。
+默认只存放一个版本，可以配置多版本
+查询默认是返回最新版本，可以通过指定版本来获取旧数据。
+
+
+
+天然的适合写的场景
+
+多写轻读
+
+多读轻写
+
+
+
+
+
+

@@ -1,0 +1,90 @@
+1.邮件
+nphwiuciuhhhdjfi
+
+先验证网络通不通
+telent  smtp.qq.com 465
+
+mkdir -p /root/.certs/
+echo -n | openssl s_client -connect smtp.qq.com:465 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ~/.certs/qq.crt
+certutil -A -n "GeoTrust SSL CA" -t "C,," -d ~/.certs -i ~/.certs/qq.crt
+certutil -A -n "GeoTrust Global CA" -t "C,," -d ~/.certs -i ~/.certs/qq.crt
+certutil -L -d /root/.certs
+cd /root/.certs
+certutil -A -n "GeoTrust SSL CA - G3" -t "Pu,Pu,Pu" -d ./ -i qq.crt
+
+tail -f xxx.log 实时查看 
+tail -200f xxx.log  先倒数200行打印 再实时查看
+cat xxx.log | grep -C 10 ERROR > 20200717.log
+more 20200717.log
+sz 20200717.log
+
+
+总结: 举一反三 邮箱大师
+
+发邮件不带附件
+EMAIL=2643854124@qq.com
+
+echo -e "`date "+%Y-%m-%d %H:%M:%S"` : The current running $JOB_NAME job num is
+$RUNNINGNUM in 192.168.137.201 ......" | mail \
+-r "From: alertAdmin <${EMAIL}>" \
+-s "Warn: Skip the new $JOB_NAME spark job." ${EMAIL}
+
+
+Warn: Skip the new spark job.
+等级 : 标题 
+INFO
+WARN
+ERROR
+
+
+
+
+发邮件带附件
+echo -e "`date "+%Y-%m-%d %H:%M:%S"` : Please to check the fail sql attachement." | mailx \
+-r "From: alertAdmin <${EMAIL}>" \
+-a error.log \
+-s "Critical:KSSH fail sql." ${EMAIL}
+
+
+ELK  日志分析平台  B站 若泽大数据 
+
+
+2.现场排查
+
+oom-killer 机制  一般表现是进程中断 日志无任何错误信息和退出信息
+[root@ruozedata001 log]# cat /var/log/messages |grep kill
+
+
+
+3.spark
+11:00 提交job
+
+11:10 先做check 上一个脚本是否运行完成  提交job
+
+
+curl -u admin:admin \
+http://39.104.97.138:7180/api/v17/clusters/RZCluster/services/yarn/yarnApplications
+
+curl -u admin:admin \
+http://39.104.97.138:7180/api/v17/clusters/RZCluster/services/yarn/yarnApplications
+
+/clusters/{clusterName}/services/{serviceName}/yarnApplications
+
+
+chown -R 670 /root
+chown -R 777 /root/.certs
+usermod -a -G root hdfs
+重新打开一个会话窗口 执行：
+su - hdfs
+echo hello word | mail -s " title" 2643854124@qq.com
+
+收到邮件
+
+
+4.函数式编程
+
+
+5.强调
+个人环境变量文件  配置在
+.bash_profile   慎用
+.bashrc     生产用这个 

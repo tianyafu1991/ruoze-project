@@ -1,0 +1,151 @@
+1.spark
+spark 数据源--》贴sql
+spark 封装sql脚本    beeline 提交的
+      封装spark-submit进行提交 jar
+spark task节点
+/var/lib/hadoop-hdfs/spark-work/spark/bin/spark-submit \
+--master yarn \
+--class org.apache.spark.examples.SparkPi \
+/var/lib/hadoop-hdfs/spark-work/spark/examples/jars/spark-examples_2.11-2.3.1.jar
+
+Pi is roughly 3.1404957024785123
+
+与shell命令提交的差别：日志内容这块，会缺少部分内容。
+
+2.队列
+租户表
+hadoop	dw
+
+用户表
+admin  	hadoop	default
+jepson	hadoop	dw
+
+也就是 hadoop dw并没有在租户表--》用户表 设定强关联
+
+想要用好队列，是跟着用户走的 
+
+用户体验上  有点别扭  后面可以 建议 ISSUE --》code--》二次开发
+
+
+3.子节点
+【只能选择当前项目的工作流】
+在一个工作流引入 其他工作流作为子节点，
+运行时子节点也会运行。
+
+好处：集中调度；也可以单点调度
+
+工作流task1 :   50个task节点  并行 串行 配置  很复杂很复杂
+工作流task2 ：  100个task节点  并行 串行 配置  很复杂很复杂
+工作流task3集中式： 只需要 工作流task1 、2
+
+坏处: 只能选择当前项目的工作流，无法引入其他项目的工作流【也可以提交到社区，别扭】
+      折中做法： 将其他项目的工作流下载 到导入
+
+4.依赖节点
+
+
+5.失败重试机制
+shell task运行的状态  
+
+结束的标识
+exit 0  默认 都是成功的
+exit 1  显性 失败的 
+
+设置失败次数 和 间隔 
+1点+ 100*3= 6点
+
+6.补数机制&全局变量
+有依赖 串
+无依赖 并  坑：27个工作流实例    机器负载彪高  夯住
+
+补数 选择日期 并没有按照日期走
+9-1~3： 2~4
+8-31--9-2
+
+【也可以提交到社区，别扭】
+
+7.任性模式
+重跑：     重新执行已经终止的流程。
+恢复失败： 针对失败的流程，可以执行恢复失败操作，从失败的节点开始执行。
+停止：     对正在运行的流程进行停止操作，后台会先killworker进程,再执行kill -9操作
+暂停：     对正在运行的流程进行暂停操作，系统状态变为等待执行，会等待正在执行的任务结束，暂停下一个要执行的任务。
+恢复暂停： 对暂停的流程恢复，直接从暂停的节点开始运行
+
+
+定时 
+
+导入导出
+
+甘特图
+
+
+调度未跟着 工作流上线而上线
+【也可以提交到社区，别扭】
+折中方案： ds的表结构 非常清晰，写个sql 封装到脚本
+工作流上线 且定时未上线 ==》发邮件预警
+
+
+8.Flink
+flink 三台安装
+conf添加 core-site.xml hdfs-site.xml yarn-site.xml
+ds的conf/env/环境变量文件配置
+
+export HADOOP_HOME=/opt/cloudera/parcels/CDH/lib/hadoop
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export SPARK_HOME2=/var/lib/hadoop-hdfs/spark-work/spark
+export JAVA_HOME=/usr/java/jdk1.8.0_45
+export HIVE_HOME=/opt/cloudera/parcels/CDH/lib//hive
+export FLINK_HOME=/ruozedata/app/flink-1.11.0
+export HADOOP_CLASSPATH=`$HADOOP_HOME/bin/hadoop classpath`
+export PATH=$HADOOP_HOME/bin:$SPARK_HOME2/bin:$JAVA_HOME/bin:$HIVE_HOME/bin:$FLINK_HOME/bin:$PATH
+
+重启ds
+
+flink-1.11.0
+
+export HADOOP_HOME=/opt/cloudera/parcels/CDH/lib/hadoop
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export HADOOP_CLASSPATH=`$HADOOP_HOME/bin/hadoop classpath`
+
+/ruozedata/app/flink-1.11.0/bin/flink \
+run -m yarn-cluster \
+-yqu dw \
+-d -c org.apache.flink.examples.java.wordcount.WordCount \
+/ruozedata/app/flink-1.11.0/examples/batch/WordCount.jar \
+--input hdfs://nameservice1/wc/input/ --output hdfs://nameservice1/wc/output
+
+
+
+问题: java.lang.Error: Failed to find GC Cleaner among available providers: [Legacy (before Java 9) cleaner provider, New Java 9+ cleaner provider]
+Caused by: java.lang.ClassNotFoundException: java.lang.ref.Cleaner
+
+
+https://issues.apache.org/jira/browse/FLINK-18581
+
+要升级java  Only support Java8 version later or equal than jdk8u72-b01.
+或者flink版本
+
+
+8u45
+
+
+问题：
+org.apache.hadoop.security.AccessControlException: Permission denied: user=hadoop, access=WRITE, inode="/wc":hdfs:supergroup:drwxr-xr-x
+
+hdfs dfs -chown -R hadoop:hadoop /wc
+
+
+
+
+[hdfs@ruozedata003 ~]$ hdfs dfs -cat hdfs://nameservice1/wc/output
+a 2
+bbbb 1
+cccc 1
+[hdfs@ruozedata003 ~]$ 
+
+
+
+Could not build the program from JAR file: JAR file does not exist: -yn
+
+去除 taskManage数量 2的默认值 为空
+或者修改源代码 

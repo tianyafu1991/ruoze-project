@@ -53,10 +53,6 @@ object SparkSQLAccessLogApp {
     val outPut = "/ruozedata/output1"
     val outPut2 = "/ruozedata/log"
 
-    /*val path = "ruoze-homework/src/main/scala/com/ruoze/bigdata/homework/day20200929/data/access.txt"
-    val outPut = "ruoze-homework/src/main/resources/out"
-    val outPut2 = "ruoze-homework/src/main/resources/out2"*/
-
     val confSql =
       s"""
          | (SELECT
@@ -104,7 +100,9 @@ object SparkSQLAccessLogApp {
 
     val accessDF: DataFrame = spark.read.format(rawDataSource).load(path)
 
-    accessDF
+    accessDF.show(10,truncate = true)
+
+    /*accessDF
       .write
       .mode(SaveMode.Overwrite)
       .options(customConfMap)
@@ -123,7 +121,7 @@ object SparkSQLAccessLogApp {
       .write
       .format(format)
       .mode(SaveMode.Append)
-      .save(outPut2)
+      .save(outPut2)*/
 
     spark.stop()
   }

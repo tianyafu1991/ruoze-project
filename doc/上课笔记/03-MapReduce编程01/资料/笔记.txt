@@ -1,0 +1,177 @@
+
+词频统计  wc
+给你一堆文件，让你统计文件中单词出现的个数
+ruoze,ruoze,ruoze
+pk,pk
+xinging
+
+ruoze 3
+pk 2
+xingxing 1
+
+实现  通用
+
+
+一堆文件读取出来   HDFS API 
+业务处理      ==>  RuozedataMapper  
+						map  专门用来处理业务逻辑
+	获取到每一行数据，按照指定的分隔符进行分割
+		ruoze,ruoze,ruoze  ==>  ruoze   ruoze   ruoze
+				WordCountMapper implements RuozedataMapper  {
+					map(line,){
+					
+					}
+				}
+把上一个步骤处理的结果找个地方存起来  Cache
+	RuozedataContext  Map<?,?>  key就是我们的单词  value就是出现的次数
+我们再把上一个步骤的cache的结果 输出到目的地     HDFS API
+
+
+
+
+
+单机
+	计算能力  存储能力  都是有极限
+	大数据年代  海量数据   ===> 分布式
+
+
+
+easily writing applications    不是真的easy，真的是比较麻烦的
+
+指的是你自己去写分布式的应用程序 vs  使用MR是实现分布式应用程序
+
+MapReduce
+	Map： 把一个任务拆解成多个任务，多个任务是可以并行计算
+		block = InputSplit(切片)
+		1T  100 
+			
+	Reduce： 规约
+		把分解后多任务执行结果汇总
+
+	提供了Mapper和Reducer类，我们需要自己去实现
+
+	屏蔽了分布式应用程序开发的麻烦，你写的代码其实就和单机的一样
+
+优缺点
+	MapReduce适合于离线计算/批计算
+	编程对于自己实现分布式而言是要简单的
+	扩展性  横向/水平的扩展  加机器
+	处理的数据量可以很大  T 
+	
+	慢： Task都是以进程级别运行   
+	不适合实时处理
+	迭代
+	
+	
+	
+	
+	
+
+
+ruoze,ruoze,ruoze
+pk,pk
+xingxing
+
+1) map
+  (ruoze,1)
+  (ruoze,1)
+  (ruoze,1)
+  (pk,1)
+  (pk,1)
+  (xingxing,1)
+
+===============Shuffle: 相同的key分发到同一个reduce处理==============================
+2) reduce
+ (ruoze, <1,1,1>)
+ (pk, <1,1>)
+ (xingxing, <1>)
+
+  对于词频统计来说：就是求每个单词出现的次数
+  (ruoze,3)
+  (pk, 2)
+  (xingxing, 1)
+
+
+
+
+MR常用的数据序列化类型 Writable
+boolean BooealnWritable
+int  IntWritable
+byte ByteWritable
+float FloatWritable
+long  LongWritable
+double DoubleWritable
+string Text
+
+
+
+Maps input key/value pairs to a set of intermediate key/value pairs.  
+	input key/value pairs
+		KEYIN VALUEIN
+	intermediate key/value pairs
+		KEYOUT VALUEOUT
+
+
+Reduces a set of intermediate values which share a key to a smaller set of values.
+
+	a set of intermediate values
+
+
+Driver
+	Mapper？ input
+	Reducer ？output
+
+
+mvn clean package -DskipTests
+
+hadoop jar /home/hadoop/lib/ruozedata-hadoop-1.0.jar com.ruozedata.bigdata.mapreduce.wc.WordCountDriverV2 /hdfswc/input/ruozedata.txt /hdfswc/output
+
+ 
+
+
+
+pk
+ruoze
+xingxing
+
+
+
+
+waitForCompletion {
+	submit{
+		connect(){
+			initialize(){
+				
+			}
+		}
+		submitter
+	}
+}
+
+
+
+outDir.getFileSystem(job.getConfiguration()).exists(outDir)
+
+
+
+决定了map的数量
+int maps = writeSplits(job, submitJobDir); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1）下载winutils.exe和hadoop.dll，添加到HADOOP_HOME，并添加到PATH中 （注意Hadoop版本）：https://github.com/steveloughran/winutils/tree/master/hadoop-2.7.1/bin
+2）放这两个在%HADOOP_HOME%\bin下，同时hadoop.dll也放在C:\Windows\System32目录下

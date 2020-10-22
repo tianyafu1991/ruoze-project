@@ -1,0 +1,194 @@
+任何一个框架： 是什么？能做什么？
+MR/Hive：批处理/离线处理
+map/reduce chain  API
+MapTask ReduceTask ==> JVM  进程
+
+jps
+
+MR/Hive/Pig...
+Storm
+Impala
+学习/运维
+
+
+一栈/站式解决方案：Spark  Flink
+Stack
+批流一体
+
+
+
+Spark：计算引擎
+
+
+Speed:
+	内存
+	DAG
+	pipeline
+	model
+
+
+
+
+
+Hadoop: YARN     Spark仅仅就是一个客户端而已，提交到YARN上
+Mesos
+Kubernetes
+standalone:  多个节点同时部署Spark， Master/Slave
+
+It can access diverse data sources 强大的Data Source API去读写数据
+	MySQL/HBase/json/parquet
+	HDFS/S3/OSS
+
+
+
+
+
+版本：x.y.z
+x: major verison  0 1 2 3
+y: minor version
+z: patch version
+
+打一些patch  Pull Request/PR
+
+
+2.4.0
+能选高的就别选低的
+
+
+cdh5.16.2
+
+Spark/Flink  自己编译的cdh5.16.2
+
+
+https://archive.apache.org/dist/spark/
+
+change....
+./dev/make-distribution.sh --name 2.6.0-cdh5.16.2 \
+--tgz -Phive -Phive-thriftserver -Pyarn \
+-Phadoop-2.6 -Dhadoop.version=2.6.0-cdh5.16.2 -Dsca......
+
+pom默认是没有cdh仓库
+pom把cdh仓库加进来
+
+
+spark-2.4.6-bin-2.6.0-cdh5.16.2.tgz
+
+
+
+if [ "$MAKE_TGZ" == "true" ]; then
+  TARDIR_NAME=spark-$VERSION-bin-$NAME
+  TARDIR="$SPARK_HOME/$TARDIR_NAME"
+  rm -rf "$TARDIR"
+  cp -r "$DISTDIR" "$TARDIR"
+  tar czf "spark-$VERSION-bin-$NAME.tgz" -C "$SPARK_HOME" "$TARDIR_NAME"
+  rm -rf "$TARDIR"
+fi
+
+Scala2.11 Scala2.12
+
+./dev/change-scala-version.sh 2.12
+
+
+
+
+
+
+技术调研的时候
+1) 优先选择顶级项目  xxx.apache.org   github.com/apache/xxx
+2) 孵化 xxx.incubator.apache.org
+3) 社区的活跃度
+
+
+
+Spark  vs  Hadoop
+Core        MR
+SQL         Hive
+Streaming   Storm
+
+
+
+HS2/beeline
+
+beeline      ***           
+spark-class  
+spark-shell *****   使用于测试 
+spark-submit *****  提交Spark作业
+spark-sql    *****
+ 
+Spark on YARN
+
+start-shuffle-service.sh
+stop-shuffle-service.sh  
+
+start-thriftserver.sh  <== HiveServer2
+stop-thriftserver.sh
+
+start-history-server.sh
+stop-history-server.sh
+
+
+
+
+spark-shell --help
+
+--master 以什么模式运行  
+	local
+	yarn
+	
+
+默认是从4040开始 
++4041  自增
+
+
+
+
+Spark Core
+RDD : 工作中直接使用RDD的场景不多  务必掌握    核心  基石  面试
+DataFrame/Dataset
+
+Resilient(弹性) Distributed(分布式) Dataset(数据集)
+
+
+
+abstract class RDD[T: ClassTag](
+    @transient private var _sc: SparkContext,
+    @transient private var deps: Seq[Dependency[_]]
+  ) extends Serializable with Logging {
+
+RDD是一个抽象类  子类
+泛型
+
+
+
+Represents an immutable,
+partitioned collection of elements that can be operated on in parallel
+
+
+Internally, each RDD is characterized by five main properties:
+- A list of partitions
+	protected def getPartitions: Array[Partition]
+
+- A function for computing each split/partition
+	def compute(split: Partition, context: TaskContext)
+	
+- A list of dependencies on other RDDs
+	protected def getDependencies: Seq[Dependency[_]] = deps
+	
+- Optionally, a Partitioner for key-value RDDs (e.g. to say that the RDD is hash-partitioned)
+	val partitioner: Option[Partitioner] = None
+	
+- Optionally, a list of preferred locations to compute each split on (e.g. block locations for
+  an HDFS file)
+	protected def getPreferredLocations(split: Partition): Seq[String] = Nil
+
+
+hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text],
+  minPartitions)
+  
+key LongWritable
+value  Text  
+  
+  
+  
+  
+  

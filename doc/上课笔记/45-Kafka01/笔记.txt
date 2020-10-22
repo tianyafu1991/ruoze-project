@@ -1,0 +1,460 @@
+一.初步了解
+
+http://kafka.apache.org/
+
+消息中间件 
+mysql-->maxwell-->kafka-->ss/flink-->hbase
+                 存储数据
+		 缓冲上游业务高峰给下游带来的压力
+		 作业夯住  
+
+流式平台
+
+
+发布&订阅: 类似一个消息系统，读写流式的数据
+处理: 可以编写可扩展的流式app，用于实时事件的响应
+存储: 副本备份，容错的集群
+
+2.生产版本如何选择
+CM+CDH KAFKA部署  : PK大数据 公众号 小视频
+
+https://docs.cloudera.com/documentation/kafka/latest.html
+http://archive.cloudera.com/kafka/kafka/4/kafka-2.2.1-kafka4.1.0.tar.gz
+
+
+kafka-2.2.1-kafka4.1.0.tar.gz
+
+
+3.部署
+3.1 单点部署   http://kafka.apache.org/22/documentation.html#quickstart
+3.2 集群部署
+按量购买三台机器 7.2 
+hosts文件
+jdk配置
+zookeeper-3.4.5-cdh5.16.2.tar.gz集群部署
+
+
+broker.id=0
+host.name=ruozedata001
+port=9092
+log.dirs=/home/hadoop/tmp/kafka-logs
+zookeeper.connect=ruozedata001:2181,ruozedata002:2181,ruozedata003:2181
+
+broker.id=1
+host.name=ruozedata002
+port=9092
+log.dirs=/home/hadoop/tmp/kafka-logs
+zookeeper.connect=ruozedata001:2181,ruozedata002:2181,ruozedata003:2181
+
+
+broker.id=2
+host.name=ruozedata003
+port=9092
+log.dirs=/home/hadoop/tmp/kafka-logs
+zookeeper.connect=ruozedata001:2181,ruozedata002:2181,ruozedata003:2181
+
+
+[hadoop@ruozedata001 kafka]$ nohup bin/kafka-server-start.sh config/server.properties &
+[hadoop@ruozedata002 kafka]$ nohup bin/kafka-server-start.sh config/server.properties &
+[hadoop@ruozedata003 kafka]$ nohup bin/kafka-server-start.sh config/server.properties &
+
+这个也可以启动
+bin/kafka-server-start.sh -daemon config/server.properties
+
+
+4.基础概念
+broker: 消息处理节点   独立进程 
+producer: 生产者  发布 独立进程  
+consumer: 消费者  订阅 独立进程 
+
+flume: source channel sink ==》 1个进程 agent
+
+topic: 数据主题  数据记录发布的地方  用来区分业务系统
+文件夹 database
+
+erp crm oa
+
+
+关系型数据库--》1个topic--》map 插入到hbase
+业务+来源  埋点日志 
+
+
+partition: topic物理上的分组
+一个topic可以分多个partition，
+每个partition都是一个【有序】的队列。
+其实就是一个文件夹而已。
+命名规则是topic名称-序号
+
+ruozedata001 ruozedata002 ruozedata003
+---------------------------------------
+ruozedata-0  ruozedata-0  ruozedata-0
+ruozedata-1  ruozedata-1  ruozedata-1
+ruozedata-2  ruozedata-2  ruozedata-2
+
+replication-factor: 副本数 3
+一个分区复制几份 和HDFS block副本数，设计思想是一致的，为了高容错！
+
+5.常用命令
+5.1 创建topic
+./kafka-topics.sh --create \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--partitions 3 \
+--replication-factor 3 \
+--topic ruozedata
+
+5.2 查看
+
+./kafka-topics.sh --list \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181
+
+5.3 描述
+./kafka-topics.sh --describe \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--topic ruozedata
+
+[hadoop@ruozedata002 bin]$ ./kafka-topics.sh --describe \
+> --zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+> --topic ruozedata
+
+Topic:ruozedata PartitionCount:3        ReplicationFactor:3     Configs:
+        Topic: ruozedata        Partition: 0   : Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
+        
+	
+	
+	
+	Topic: ruozedata        Partition: 1    Leader: 0       Replicas: 0,1,2 Isr: 0,1,2
+        Topic: ruozedata        Partition: 2    Leader: 1       Replicas: 1,2,0 Isr: 1,2,0
+[hadoop@ruozedata002 bin]$ 
+
+
+第一行 ：topic的名称  分区 副本
+第二行开始 ： 每一行列出每一个分区的信息，是第几个分区，leader是在哪个broker上，副本是位于哪些broker上，有哪些副本处理同步状态的。
+
+leader: 负责该分区的读写节点  另外两个同步数据的
+isr:  in sync replicas，当前活跃的副本列表，并且有可能成为leader。
+
+kill ruozedata003进程，再查看，leader发生变化
+[hadoop@ruozedata003 bin]$ jps
+19418 Kafka
+21756 Jps
+9356 QuorumPeerMain
+20094 ZooKeeperMain
+[hadoop@ruozedata003 bin]$ kill -9 19418
+[hadoop@ruozedata003 bin]$ 
+[hadoop@ruozedata002 bin]$ ./kafka-topics.sh --describe --zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 --topic ruozedata
+Topic:ruozedata PartitionCount:3        ReplicationFactor:3     Configs:
+        Topic: ruozedata        Partition: 0    Leader: 0       Replicas: 2,0,1 Isr: 0,1
+        Topic: ruozedata        Partition: 1    Leader: 0       Replicas: 0,1,2 Isr: 0,1
+        Topic: ruozedata        Partition: 2    Leader: 1       Replicas: 1,2,0 Isr: 1,0
+[hadoop@ruozedata002 bin]$ 
+
+
+
+5.4 删除topic
+总结：
+删除不可逆，细心操作删除命令
+topic名称不舒服，尽量不要删除，删除有风险
+命名规则不要带标点符号，就英文  带数字  默认小写
+
+./kafka-topics.sh --delete \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--topic ruozedata
+
+假如未来删除不干净：
+1.linux 磁盘文件夹
+2.zk的元数据
+ls /kafka/brokers/topic
+ls /kafka/config/topic
+
+等待+尝试重启
+
+补充：
+ruozedata001:2181,ruozedata002:2181,ruozedata003:2181/kafka
+
+
+5.5 重新创建 修改 
+./kafka-topics.sh --create \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--partitions 1 \
+--replication-factor 1 \
+--topic ruozedata
+
+
+./kafka-topics.sh --alter \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--partitions 2 \
+--replication-factor 2 \
+--topic ruozedata
+
+Option "[replication-factor]" can't be used with option "[alter]"
+
+
+./kafka-topics.sh --alter \
+--zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181 \
+--partitions 2 \
+--topic ruozedata
+
+WARNING: If partitions are increased for a topic that has a key, 
+the partition logic or ordering of the messages will be affected
+
+
+5.6 自动迁移数据到新的节点
+http://kafka.apache.org/22/documentation.html#basic_ops_automigrate
+
+
+6.console案例
+./kafka-console-producer.sh \
+--broker-list ruozedata001:9092,ruozedata002:9092,ruozedata003:9092 \
+--topic ruozedata
+
+
+./kafka-console-consumer.sh \
+--bootstrap-server ruozedata001:9092,ruozedata002:9092,ruozedata003:9092 \
+--topic ruozedata \
+--from-beginning
+
+
+1
+3
+5
+7
+9
+
+2
+4
+6
+8
+10
+
+假如consumer会话中断，查询打开，从头开始消费，数据出现【全局乱序】现象，思考如何保障【全局有序】？
+
+2
+4
+6
+8
+10
+b
+www
+
+1
+3
+5
+7
+9
+a
+c
+a
+
+2个partition ，【每个partition都是独立的，都是自己的有序】
+a.partition自己的有序
+b.多个partition 无法保障 如何保障【全局有序】
+  b1. 就创建一个partition
+  b2. 消费者消费时候，分组排序  性能很低
+
+
+mysql
+insert 100
+update1 200    ===》p0  insert
+update2 300         p1  update1 update3   ===》消费  i u2 d u1 u3
+update3 500         p3  update2 delete 
+delete
+
+1---》0条                                       1--》1条      多
+
+
+insert 100
+update1 200    ===》p0  insert1  insert2
+update2 300         p1  update1 update3   ===》消费  i1 i2 u1 u3 u2 d
+update3 500         p3  update2 delete 
+delete
+insert 600
+1---》1条                                       1--》0条      少
+
+
+insert 100
+update1 200    ===》p0  insert1  
+update2 300         p1  update1 update3   ===》消费  i1 u1 u3 u2
+update3 500         p3  update2 
+
+1---》1条                                       1--》1条      相同数量 但是值不一样
+
+
+做实时数仓，第一次数据源同步数据 是不好做的 
+
+
+
+mysql-->maxwell-->kafka-->ss/flink-->hbase
+                          map--》put/phoenix sql语句  
+			  没有shuffle
+
+
+
+===============================================
+kafka分区策略
+https://github.com/apache/kafka/blob/6cfed8ad0061cdb2c71df03001cbd485491d6dfa/clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java
+
+
+send(k,v)
+
+
+Utils.toPositive(Utils.murmur2(keyBytes)) % numPartitions;
+
+
+erpdb.order   100
+erpdb.order   200
+erpdb.order   300
+erpdb.order   500
+erpdb.order   del
+
+10 % 3 =3 ...1
+
+p1  第二个分区
+
+
+
+
+erpdb.ordersum   100
+erpdb.ordersum   200
+erpdb.ordersum   300
+erpdb.ordersum   500
+erpdb.ordersum   del
+
+11 % 3 =3 ...2
+
+p2  第三个分区
+
+
+erpdb.sku   s100
+erpdb.sku   s200
+erpdb.sku   s300
+erpdb.sku   s500
+erpdb.sku   sdel
+
+11 % 3 =3 ...2
+
+p2  第三个分区
+
+
+100
+s100
+s200
+200
+s300
+
+
+【特征数据】：key 下功夫 
+
+producer_partition_by gives you a choice of splitting your stream by 
+database, table, primary key, transaction id, column data, or "random". 
+
+producer_partition_by = table
+
+
+高潮来了，11
+数据值不同 数据量不对
+
+acks: all
+all   所有分区所有副本写成功  返回 ： 最可靠保障  性能低点
+1     所有分区leader写成功    返回 ： 性能高      保障级别低点
+
+
+retries                                 2147483647       100
+max.in.flight.requests.per.connection   5                1
+
+Allowing retries without setting max.in.flight.requests.per.connection to 1 will potentially change the ordering of records because if two batches are sent to a single partition
+
+
+1
+2
+3  失败了
+4
+5
+3 重试1  成功
+
+
+1
+2
+4
+5
+3
+
+
+
+若泽大数据 公众号 有博客 
+
+https://github.com/zendesk/maxwell/blob/25e463d0d8b0162e338ecdda9324a310f575e97e/config.properties.example
+
+
+==========================================================
+如何做数据质量校验
+1.数据量校验
+  1.1 count(1) 
+  【业务场景】 
+  3天
+
+
+
+  10-9号 手表时间  10-6号
+  10-10号          10-7号
+
+  一天卡一天
+
+
+  数据量不想等 ，启动【数据上下游rk ：full join】
+
+  修数
+
+
+
+2.数据内容校验 随机校验 
+
+x=y=z
+x=z
+
+full join
+
+a上游
+1
+3
+5
+
+
+a下游
+1
+5
+7
+
+
+a上游     a下游
+3	null    下游缺少  ---》 封装起来 put/upsert 插入  补数据 
+null	7       下游多了  ---》 delete 删除
+
+
+
+
+
+
+=============================================
+offset:偏移量
+每个分区的offset(绝对offset)，0开始，分区内都是唯一的，有序的 
+
+
+ruozedata-0 文件夹==》ruozedata-0 table
+
+offset  value
+  0       a
+  1	  b
+  2	  c
+  3	  d
+
+消费了   a,  0 维护一下     offsettable
+         b,  1 维护一下     offsettable
+         c消费是挂了
+
+	 job重启 就从c重新开始消费
+
+	 精准消费一次  1
+
+	 至少一次消费  1 2 3
+	 最多一次消费  0 1
+

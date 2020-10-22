@@ -1,0 +1,101 @@
+数据==>LogServer==>Flume==>MR==>Table==>SQL==>Table  <== Query API ==> UI
+                              |<---  离线数仓  --->|
+							  
+							  
+							  
+调度
+	MR  ==> etl.sh    手工执行
+	SQL ==> stat.sh   手工执行
+
+自动的调度
+
+access的业务正常流程: 
+	MR ==>10~20个维度  
+	依赖关系
+	
+还有一个流程：补数
+	MR是不是只要跑一次就够了
+	SQL统计都是基于MR出来的落地到ODS层的数据的
+	mr ==> a => b => c
+
+业务：MR SQL Java Spark Flink...
+
+
+调度框架常用
+	shell：crontab 简单、不易于监控、不易于重跑、不易于依赖
+	azkaban：易用
+	oozie：重量级，xml(dtd、schema?)，hue(整合了oozie的调度)
+	airflow： Python
+	EasyScheduler：国内开源的
+	自研调度：
+
+
+easy to use
+	配置 写起来太麻烦了... 
+	==>
+	工作量非常大 
+	==> JavaEE + UI
+
+原来是需要upload(zip)
+
+
+第一版本：
+	离线ETL+Hive(command: sh stat.sh) ==> AZ跑
+
+第二版本: optional	
+	离线ETL+Hive(hive)
+
+
+
+
+
+
+
+
+AZ3.x 
+
+
+
+
+./gradlew build installDist -x test
+
+
+
+单机版：azkaban-solo-server 
+生产版：azkaban-web-server  azkaban-exec-server
+
+
+
+
+
+
+
+default.timezone.id=Asia/Shanghai
+
+
+
+
+database.type=mysql
+mysql.port=3306
+mysql.host=localhost
+mysql.database=azkaban
+mysql.user=azkaban
+mysql.password=!Ruozedata123
+mysql.numconnections=100
+
+
+
+1)修改表数据
+2)curl http://ruozedata001:42205/executor?action=activate
+
+
+
+
+
+
+
+
+
+
+
+							  
