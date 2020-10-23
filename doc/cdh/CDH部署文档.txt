@@ -809,6 +809,9 @@ ruozedata001:mysqladmin:/usr/local/mysql:>service mysql start
 [root@ruozedata001 ~]# /opt/cloudera-manager/cm-5.16.2/etc/init.d/cloudera-scm-agent start
 
 
+十、安装HBase
+[root@ruozedata001 ~]# scp ~/software/hbase-1.2.0-cdh5.16.2.tar.gz ruozedata002:/root/software/
+[root@ruozedata001 ~]# tar -xvf ~/software/hbase-1.2.0-cdh5.16.2.tar.gz -C ~/app/
 
 20190101
 

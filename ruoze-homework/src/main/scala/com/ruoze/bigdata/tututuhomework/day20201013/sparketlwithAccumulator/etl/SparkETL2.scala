@@ -2,7 +2,8 @@ package com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.etl
 
 import java.lang.reflect.Method
 
-import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.{FileUtils, SparkLogETLUtils}
+import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.SparkLogETLUtils
+import com.ruoze.bigdata.utils.FileUtils
 import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, RemoteIterator}
 import org.apache.spark.internal.Logging
 import org.apache.spark.{SparkConf, SparkContext}

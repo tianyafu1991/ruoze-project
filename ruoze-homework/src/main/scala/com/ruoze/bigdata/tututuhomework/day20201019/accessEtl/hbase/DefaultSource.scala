@@ -7,7 +7,7 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
 
   //RelationProvider
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
-    null
+    HBaseRelation(sqlContext,parameters,null)
   }
 
   //CreatableRelationProvider

@@ -1,6 +1,6 @@
 package com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.etl
 
-import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.FileUtils
+import com.ruoze.bigdata.utils.FileUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 

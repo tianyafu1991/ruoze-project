@@ -1,4 +1,4 @@
-package com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils
+package com.ruoze.bigdata.utils
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}

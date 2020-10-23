@@ -3,8 +3,10 @@ package com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.etl
 import java.lang.reflect.Method
 import java.sql.PreparedStatement
 import java.text.SimpleDateFormat
+
 import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.domain.Access
-import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.{FileUtils, SparkLogETLUtils2}
+import com.ruoze.bigdata.tututuhomework.day20201013.sparketlwithAccumulator.utils.SparkLogETLUtils2
+import com.ruoze.bigdata.utils.FileUtils
 import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, RemoteIterator}
 import org.apache.spark.rdd.{JdbcRDD, RDD}
 import org.apache.spark.util.LongAccumulator
