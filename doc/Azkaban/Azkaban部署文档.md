@@ -207,3 +207,44 @@ curl -G "ruozedata003:12321/executor?action=activate" && echo
 ```
 
 # 第三方插件部署
+```
+[hadoop@ruozedata001 ~]$ cd app/azkaban-exec-server
+[hadoop@ruozedata001 azkaban-exec-server]$ cd plugins/jobtypes/
+[hadoop@ruozedata001 jobtypes]$ ll
+total 67596
+-rw-r--r-- 1 hadoop hadoop 69210207 Aug 22 07:14 azkaban-jobtype-3.0.0.tar.gz
+-rw-r--r-- 1 hadoop hadoop       88 Oct 19 13:08 commonprivate.properties
+[hadoop@ruozedata001 jobtypes]$ mv commonprivate.properties commonprivate.properties.bak
+[hadoop@ruozedata001 jobtypes]$ tar -xvf azkaban-jobtype-3.0.0.tar.gz 
+[hadoop@ruozedata001 jobtypes]$ mv azkaban-jobtype-3.0.0/* .
+
+[hadoop@ruozedata001 jobtypes]$ vim commonprivate.properties
+# add by tianyafu @20201019
+execute.as.user=false
+azkaban.should.proxy=false
+hadoop.home=/opt/cloudera/parcels/CDH/lib/hadoop
+obtain.binary.token=false
+hive.home=/opt/cloudera/parcels/CDH/lib/hive
+spark.home=/home/hadoop/app/spark
+azkaban.native.lib=false
+hadoop.classpath=${hadoop.home}/etc/hadoop,/home/hadoop/app/azkaban-exec-server/extlib/*
+jobtype.global.classpath=${hadoop.home}/etc/hadoop,/home/hadoop/app/azkaban-exec-server/extlib/*
+
+# 配置Hive
+[hadoop@ruozedata001 jobtypes]$ vim hive/plugin.properties 
+# add by tianyafu @20201018
+hive.home=/opt/cloudera/parcels/CDH/lib/hive
+hive.aux.jars.path=${hive.home}/auxlib
+hive.jvm.args=-Dhive.querylog.location=. -Dhive.exec.scratchdir=/tmp/hive-${user.to.proxy} -Dhive.aux.jars.path=${hive.aux.jars.path}
+jobtype.jvm.args=${hive.jvm.args}
+
+[hadoop@ruozedata001 jobtypes]$ vim hive/private.properties
+jobtype.classpath=${hadoop.home}/etc/hadoop,/home/hadoop/app/azkaban-exec-server/extlib/*,${hive.home}/lib/*,${hive.home}/conf,${hive.aux.jar.path}/*
+
+[hadoop@ruozedata001 jobtypes]$ vim $AZKABAN_EXECUTOR_HOME/bin/internal/internal-start-executor.sh
+CLASSPATH=$CLASSPATH:$azkaban_dir/extlib/*
+
+[hadoop@ruozedata001 jobtypes]$ cd $AZKABAN_EXECUTOR_HOME/plugins/
+
+
+```
