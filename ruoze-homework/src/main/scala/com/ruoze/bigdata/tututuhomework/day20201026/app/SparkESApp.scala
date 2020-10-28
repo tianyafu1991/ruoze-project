@@ -3,7 +3,7 @@ package com.ruoze.bigdata.tututuhomework.day20201026.app
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 import org.elasticsearch.spark.sql._
 import org.elasticsearch.spark._
 import org.json4s.DefaultFormats
@@ -26,19 +26,18 @@ object SparkESApp {
     val spark = SparkSession.builder().config(conf).getOrCreate()
     val sc: SparkContext = spark.sparkContext
 
-    System.setProperty("HADOOP_USER_NAME", "hadoop")
-    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop:9000")
+    /*System.setProperty("HADOOP_USER_NAME", "hadoop")
+    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop01:9000")*/
 
     val filePath = conf.get("spark.dw.raw.path", "/ruozedata/dw/raw/hbase")
     val flag = conf.get("spark.use.df", "false").toBoolean
-    val esNodes: String = conf.get("spark.es.nodes", "hadoop")
+    val esNodes: String = conf.get("spark.es.nodes", "hadoop01")
     val esPort: String = conf.get("spark.es.port", "9200")
     val resource: String = conf.get("spark.es.resource", "access_log_rdd/")
 
     val executionTime: String = conf.get("spark.execute.time", "20190101")
     val input = s"${filePath}/${executionTime}"
 
-    val rawFormat = "com.ruoze.bigdata.tututuhomework.day20201022.rawIo"
 
     val esOptions: Map[String, String] = Map(
       "es.nodes" -> esNodes,
@@ -46,18 +45,18 @@ object SparkESApp {
     )
 
 
-    val rawDF = spark.read.format(rawFormat).load(input)
+    val rawDF = readFromRaw(input,spark)
 
     rawDF.show(10, false)
     println("这个是从文本中取出来的")
-
 
     if (!flag) {
       //使用RDD
       saveJSONToESUseRDD(resource, esOptions, rawDF.toJSON.rdd)
       println("使用RDD方式写入ES成功。。。。。。。。。。")
       val esRDD: RDD[(String, collection.Map[String, AnyRef])] = sc.esRDD(resource, esOptions)
-      esRDD.foreach(println)
+
+      esRDD.collect().foreach(println)
       println("从ES中读取完毕")
     } else {
       //DF读写ES
@@ -67,7 +66,7 @@ object SparkESApp {
         .options(esOptions)
         .mode(SaveMode.Overwrite)
         .save(resource)
-
+      println("使用DF写入ES中成功。。。。。。。。。")
       val esDF = spark
         .read
         .format("es")
@@ -75,12 +74,19 @@ object SparkESApp {
         .load(resource)
 
       esDF.show(false)
+      println("使用DF从ES中读取完毕")
     }
 
     spark.stop()
 
   }
 
+
+  def readFromRaw(input:String,spark:SparkSession): DataFrame ={
+    val rawFormat = "com.ruoze.bigdata.tututuhomework.day20201022.rawIo"
+    val rawDF: DataFrame = spark.read.format(rawFormat).load(input)
+    rawDF
+  }
 
   def saveJSONToESUseRDD(resource: String, esOptions: Map[String, String], jsonRDD: RDD[String]): Unit = {
 
