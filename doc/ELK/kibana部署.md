@@ -1,4 +1,4 @@
-[hadoop@hadoop01 ~]$ cd software/
+[hadoop@hadoop01 ~]$ cd ~/software/
 [hadoop@hadoop01 software]$ tar -xvf kibana-7.9.2-linux-x86_64.tar.gz -C ~/app/
 [hadoop@hadoop01 software]$ cd ~/app/
 [hadoop@hadoop01 app]$ ln -s kibana-7.9.2-linux-x86_64 kibana

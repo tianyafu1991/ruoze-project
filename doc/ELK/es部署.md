@@ -31,7 +31,6 @@ ERROR: [1] bootstrap checks failed
 [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
 ERROR: Elasticsearch did not exit normally - check the logs at /home/hadoop/tmp/es/logs/elasticsearch.log 
 
-
 [hadoop@hadoop01 config]$ su - root
 密码：
 上一次登录：四 10月  1 00:01:54 CST 2020pts/2 上
@@ -39,4 +38,12 @@ ERROR: Elasticsearch did not exit normally - check the logs at /home/hadoop/tmp/
 vm.max_map_count = 655360
 [root@hadoop01 ~]# sysctl -a | grep "vm.max_map_count"
 vm.max_map_count = 655360
+
+
+[hadoop@hadoop elasticsearch]$ ERROR: [1] bootstrap checks failed
+    [1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65535]
+    
+[root@hadoop ~]# vim /etc/security/limits.conf
+
+
 

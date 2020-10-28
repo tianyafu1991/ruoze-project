@@ -10,8 +10,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
 case class AccessRelation(override val sqlContext: SQLContext, path: String, userSchema: StructType)
   extends BaseRelation
     with InsertableRelation
-    with TableScan
-    with Logging {
+    with TableScan {
   //BaseRelation要实现的方法
   override def schema: StructType = {
     if (userSchema != null) {
@@ -56,7 +55,7 @@ case class AccessRelation(override val sqlContext: SQLContext, path: String, use
     splits.map(arr => {
       try {
         val time = arr(0)
-        logError(s"时间:${time}")
+        println(s"时间:${time}")
         val ip = arr(1)
         val proxyIp = arr(2)
         val responseTime = arr(3)

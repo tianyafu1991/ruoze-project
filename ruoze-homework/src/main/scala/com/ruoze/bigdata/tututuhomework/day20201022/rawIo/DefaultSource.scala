@@ -5,7 +5,7 @@ import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, Re
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with Serializable with Logging {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with Serializable {
 
   //RelationProvider要实现的方法
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
