@@ -16,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation, TableScan}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
-import scala.collection.JavaConverters.seqAsJavaList
+//import scala.collection.JavaConverters.seqAsJavaList
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 

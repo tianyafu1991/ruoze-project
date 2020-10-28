@@ -580,6 +580,44 @@ spark-sql> select * from ruozedata.test_spark;
 Time taken: 7.565 seconds, Fetched 5 row(s)
 20/10/20 13:41:56 INFO thriftserver.SparkSQLCLIDriver: Time taken: 7.565 seconds, Fetched 5 row(s)
 
+# 安装kafka
+[root@ruozedata001 software]# yum install -y httpd
+[root@ruozedata001 software]# service httpd start
+
+[root@ruozedata001 software]# ll /var/www/html/
+
+[root@ruozedata001 software]# mkdir kafka_parcel
+[root@ruozedata001 software]# mv ~/software/KAFKA-4.1.0-1.4.1.0.p0.4-el7.parcel kafka_parcel
+[root@ruozedata001 software]# mv ~/software/manifest.json kafka_parcel
+[root@ruozedata001 software]# mv ~/software/KAFKA-4.1.0-1.4.1.0.p0.4-el7.parcel.sha1 kafka_parcel/KAFKA-4.1.0-1.4.1.0.p0.4-el7.parcel.sha
+[root@ruozedata001 software]# ll
+total 4
+drwxr-xr-x 2 root root 4096 Oct 25 22:05 kafka_parcel
+[root@ruozedata001 software]# mv kafka_parcel /var/www/html/
+浏览器访问http://ruozedata001/kafka_parcel/ 可以看到我们放入的3个文件
+
+创建topic
+kafka-topics --create --zookeeper  ruozedata001:2181,ruozedata002:2181,ruozedata003:2181/kafka --replication-factor 2 --partitions 2 --topic ruozedata
+
+kafka-console-producer --broker-list ruozedata002:9092,ruozedata003:9092 --topic ruozedata
+
+kafka-console-consumer --bootstrap-server ruozedata002:9092,ruozedata003:9092 --from-beginning --topic ruozedata
+
+# 安装Flume
+[root@ruozedata001 ~]# cd ~/software/
+[root@ruozedata001 software]# tar -xvf apache-flume-1.7.0-bin.tar.gz -C ~/app
+[root@ruozedata001 software]# cd ~/app/
+[root@ruozedata001 app]# ln -s apache-flume-1.7.0-bin flume
+[root@ruozedata001 app]# cd flume/conf/
+[root@ruozedata001 conf]# cp flume-env.sh.template flume-env.sh
+[root@ruozedata001 conf]# vim flume-env.sh
+export JAVA_HOME=/usr/java/jdk1.8.0_181
+[root@ruozedata001 app]# scp -r apache-flume-1.7.0-bin ruozedata002:/root/app/
+[root@ruozedata001 app]# scp -r apache-flume-1.7.0-bin ruozedata003:/root/app/
+[root@ruozedata002 ~]# cd ~/app/
+[root@ruozedata002 app]# ln -s apache-flume-1.7.0-bin flume
+
+
 八、配置Azkaban
 
 [root@ruozedata003 ~]# tar -xvf ~/software/azkaban-exec-server-0.1.0-SNAPSHOT.tar.gz -C ~/app/

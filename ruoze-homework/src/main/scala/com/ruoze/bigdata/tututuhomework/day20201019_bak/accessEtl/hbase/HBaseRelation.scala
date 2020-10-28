@@ -1,5 +1,7 @@
 package com.ruoze.bigdata.tututuhomework.day20201019_bak.accessEtl.hbase
 
+import java.util
+
 import com.ruoze.bigdata.tututuhomework.day20201019_bak.accessEtl.utils.HBaseUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -86,11 +88,12 @@ case class HBaseRelation(@transient sqlContext: SQLContext, parameters: Map[Stri
         HBaseUtils.castRow2Put(x.schema, x)
       })
 
-      val list: List[Put] = puts.toList
+      val putList: util.List[Put] = puts.toList.asJava
+//      val list: List[Put] = puts.toList
 
       val hTable = HBaseUtils.getHTable(configuration, hbaseTable)
 
-      hTable.put(seqAsJavaList(list))
+      hTable.put(putList)
       hTable.flushCommits()
     })
   }

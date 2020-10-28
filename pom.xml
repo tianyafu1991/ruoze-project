@@ -22,8 +22,8 @@
         <spark.version>2.4.6</spark.version>
         <!--<spark.version>2.3.0</spark.version>-->
         <!--<spark.version>3.0.1</spark.version>-->
-        <scala.binary.version>2.12</scala.binary.version>
-        <!--<scala.binary.version>2.11</scala.binary.version>-->
+<!--        <scala.binary.version>2.12</scala.binary.version>-->
+        <scala.binary.version>2.11</scala.binary.version>
         <flume.version>1.6.0-cdh5.16.2</flume.version>
         <hbase.version>1.2.0-cdh5.16.2</hbase.version>
         <zookeeper.version>3.4.5-cdh5.16.2</zookeeper.version>
@@ -47,6 +47,12 @@
         <repository>
             <id>cloudera</id>
             <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+
+        <repository>
+            <id>sonatype-oss</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
 
@@ -270,6 +276,13 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-pool2</artifactId>
                 <version>2.4.2</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch-spark-20_2.11</artifactId>
+                <version>7.9.3</version>
             </dependency>
 
         </dependencies>
