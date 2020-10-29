@@ -207,10 +207,10 @@
             <artifactId>commons-pool2</artifactId>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch-spark-20_2.11</artifactId>
-        </dependency>
+        </dependency>-->
 
     </dependencies>
 
