@@ -1,0 +1,266 @@
+1.单点
+bin/kafka-server-start.sh -daemon config/server.properties
+
+bin/kafka-topics.sh \
+--create \
+--zookeeper ruozedata001:2181/kafka \
+--partitions 1 \
+--replication-factor 1 \
+--topic g9
+
+
+bin/kafka-topics.sh \
+--describe \
+--zookeeper ruozedata001:2181/kafka \
+--topic g9
+
+
+2.核心概念
+consumer group 消费组
+consumer 消费者
+
+group.id
+
+
+消费者使用一个消费组的名称来标识
+A组 2个消费者
+B组 4个消费者
+a.容错机制
+b.一个组内 共享一个公共的group id。 ss code定义
+c.组内的【所有消费者】 是协调一起的，去消费指定的topic的【所有分区】
+d.每个分区 只能被一个消费组的一个消费者 来消费，
+绝对不能出现一个分区被一个消费组的多个消费者【重复】消费！
+
+
+offset 消息标识的ID
+
+segment 分段： 一个分区被切割成多个相同大小的文件
+
+log文件是数据
+index是索引
+# The maximum size of a log segment file. When this size is reached a new log segment will be created.
+#log.segment.bytes=1073741824
+
+log.segment.bytes=1048576 
+
+[hadoop@ruozedata001 rz-0]$ ll
+-rw-rw-r-- 1 hadoop hadoop     2008 Oct 28 20:45 00000000000000000000.index
+-rw-rw-r-- 1 hadoop hadoop  1048501 Oct 28 20:45 00000000000000000000.log
+-rw-rw-r-- 1 hadoop hadoop     3024 Oct 28 20:45 00000000000000000000.timeindex
+-rw-rw-r-- 1 hadoop hadoop 10485760 Oct 28 20:45 00000000000000011250.index
+-rw-rw-r-- 1 hadoop hadoop   258500 Oct 28 20:45 00000000000000011250.log
+-rw-rw-r-- 1 hadoop hadoop       10 Oct 28 20:45 00000000000000011250.snapshot
+-rw-rw-r-- 1 hadoop hadoop 10485756 Oct 28 20:45 00000000000000011250.timeindex
+
+
+强调： 每个分区都是由一系列有序的 不可变的 消息组成。 消息是被【追加】到分区的。
+       每个分区中的每个消息 都是有一个连续的序列号（offset）来标识，用于该消息在这个topic-partition的唯一标识 
+
+
+
+3.压测代码
+kafka 京东云 
+idea code 本地window电脑 producer端
+3.1 配置尽量使用机器名称 以后开发中也这样 不要使用外网ip，有可能连接不上
+    window本地hosts文件也要配置 
+
+3.2 云服务器的安全组 要开启9092端口号，要学会测试验证 使用 telnet ruozedata001 9092
+
+3.3 kafka配置 
+advertised.listeners=PLAINTEXT://ruozedata001:9092
+
+重启
+
+
+4.压测之后,解读log和index
+[hadoop@ruozedata001 g9-0]$ ll
+total 1400
+-rw-rw-r-- 1 hadoop hadoop     2008 Oct 28 21:52 00000000000000000000.index
+-rw-rw-r-- 1 hadoop hadoop  1048556 Oct 28 21:52 00000000000000000000.log
+-rw-rw-r-- 1 hadoop hadoop     3024 Oct 28 21:52 00000000000000000000.timeindex
+-rw-rw-r-- 1 hadoop hadoop 10485760 Oct 28 21:52 00000000000000011273.index
+-rw-rw-r-- 1 hadoop hadoop   350338 Oct 28 21:53 00000000000000011273.log
+-rw-rw-r-- 1 hadoop hadoop       10 Oct 28 21:52 00000000000000011273.snapshot
+-rw-rw-r-- 1 hadoop hadoop 10485756 Oct 28 21:52 00000000000000011273.timeindex
+-rw-rw-r-- 1 hadoop hadoop       68 Oct 28 21:49 0.index
+-rw-rw-r-- 1 hadoop hadoop       85 Oct 28 21:47 0.txt
+-rw-rw-r-- 1 hadoop hadoop        8 Oct 28 21:18 leader-epoch-checkpoint
+[hadoop@ruozedata001 g9-0]$ 
+
+
+/home/hadoop/app/kafka/bin/kafka-run-class.sh \
+kafka.tools.DumpLogSegments \
+--files /home/hadoop/tmp/kafka-logs/g9-0/00000000000000000000.log \
+--print-data-log \
+> 0.txt
+
+/home/hadoop/app/kafka/bin/kafka-run-class.sh \
+kafka.tools.DumpLogSegments \
+--files /home/hadoop/tmp/kafka-logs/g9-0/00000000000000011273.log \
+--print-data-log \
+> 11273.txt
+
+
+
+/home/hadoop/app/kafka/bin/kafka-run-class.sh \
+kafka.tools.DumpLogSegments \
+--files /home/hadoop/tmp/kafka-logs/g9-0/00000000000000000000.index \
+--print-data-log \
+> 0.index
+
+
+/home/hadoop/app/kafka/bin/kafka-run-class.sh \
+kafka.tools.DumpLogSegments \
+--files /home/hadoop/tmp/kafka-logs/g9-0/00000000000000011273.index \
+--print-data-log \
+> 11273.index
+
+
+
+[hadoop@ruozedata001 g9-0]$ more 0.txt
+Dumping /home/hadoop/tmp/kafka-logs/g9-0/00000000000000000000.log
+Starting offset: 0
+baseOffset: 0 lastOffset: 0 count: 1 baseSequence: -1 lastSequence: -1 producerId: -1 producerEpoc
+h: -1 partitionLeaderEpoch: 0 isTransactional: false isControl: false position: 0 CreateTime: 1603
+892993613 size: 90 magic: 2 compresscodec: NONE crc: 2437813154 isvalid: true
+
+| offset: 0 CreateTime: 1603892993613 keysize: 4 valuesize: 18 sequence: -1 headerKeys: [] key: ayload: www.ruozedata.com1
+baseOffset: 1 lastOffset: 1 count: 1 baseSequence: -1 lastSequence: -1 producerId: -1 producerEpoc
+h: -1 partitionLeaderEpoch: 0 isTransactional: false isControl: false position: 90 CreateTime: 160
+3892993670 size: 90 magic: 2 compresscodec: NONE crc: 1523840445 isvalid: true
+
+| offset: 1 CreateTime: 1603892993670 keysize: 4 valuesize: 18 sequence: -1 headerKeys: [] key: ayload: www.ruozedata.com2
+baseOffset: 2 lastOffset: 2 count: 1 baseSequence: -1 lastSequence: -1 producerId: -1 producerEpoc
+h: -1 partitionLeaderEpoch: 0 isTransactional: false isControl: false position: 180 CreateTime: 16
+03892993681 size: 90 magic: 2 compresscodec: NONE crc: 3426447752 isvalid: true
+
+......
+......
+| offset: 11272 CreateTime: 1603893089991 keysize: 4 valuesize: 22 sequence: -1 headerKeys: [] key: ,      payload: www.ruozedata.com11273
+
+
+
+第一个文件00000000000000000000   存储 11273			offset 0-11272
+第二个文件00000000000000011273   存储 15000-11273=3727          offset 11273-14999
+
+segment命名规则： 第一组segment文件必然 00000000000000000000
+                  第二组segment文件：上一个文件内容最后一条数据的offset+1 ,
+		  也是作为该segment的起步offset 
+
+
+
+log文件是原封不动的 有啥记啥
+但是index文件是 稀疏表
+[hadoop@ruozedata001 g9-0]$ cat 0.index
+Dumping /home/hadoop/tmp/kafka-logs/g9-0/00000000000000000000.index
+offset: 46 position: 4177
+offset: 92 position: 8363
+offset: 137 position: 12496
+offset: 182 position: 16636
+offset: 227 position: 20776
+offset: 272 position: 24916
+offset: 317 position: 29056
+offset: 362 position: 33196
+offset: 407 position: 37336
+offset: 452 position: 41476
+offset: 497 position: 45616
+
+[hadoop@ruozedata001 g9-0]$ cat 11273.index 
+Dumping /home/hadoop/tmp/kafka-logs/g9-0/00000000000000011273.index
+offset: 11317 position: 4136
+offset: 11361 position: 8272
+offset: 11405 position: 12408
+offset: 11449 position: 16544
+offset: 11493 position: 20680
+offset: 11537 position: 24816
+offset: 11581 position: 28952
+offset: 11625 position: 33088
+offset: 11669 position: 37224
+offset: 11713 position: 41360
+offset: 11757 position: 45496
+offset: 11801 position: 49632
+offset: 11845 position: 53768
+offset: 11889 position: 57904
+offset: 11933 position: 62040
+offset: 11977 position: 66176
+
+
+维护该分区的message的对应的offset，对应的物理地址 物理偏移量 字节byte
+也就是 不是每个message都被维护到index文件 
+
+offset该分区下的 全局 ，是从0开始，绝对的offset 
+千万不要被有些博客 视频 公众号误导。相对offset 从1开始这种类似的 
+
+
+
+
+5.如下内容，如何快速查找offset 11500的数据，简述过程？
+[hadoop@ruozedata001 g9-0]$ ll
+total 1400
+-rw-rw-r-- 1 hadoop hadoop     2008 Oct 28 21:52 00000000000000000000.index
+-rw-rw-r-- 1 hadoop hadoop  1048556 Oct 28 21:52 00000000000000000000.log           11273条
+-rw-rw-r-- 1 hadoop hadoop     3024 Oct 28 21:52 00000000000000000000.timeindex
+-rw-rw-r-- 1 hadoop hadoop 10485760 Oct 28 21:52 00000000000000011273.index
+-rw-rw-r-- 1 hadoop hadoop   350338 Oct 28 21:53 00000000000000011273.log           存储多少条 ？  作业
+-rw-rw-r-- 1 hadoop hadoop       10 Oct 28 21:52 00000000000000011273.snapshot
+-rw-rw-r-- 1 hadoop hadoop 10485756 Oct 28 21:52 00000000000000011273.timeindex
+
+						 00000000000000022428.log 
+
+-rw-rw-r-- 1 hadoop hadoop       68 Oct 28 21:49 0.index
+-rw-rw-r-- 1 hadoop hadoop       85 Oct 28 21:47 0.txt
+-rw-rw-r-- 1 hadoop hadoop        8 Oct 28 21:18 leader-epoch-checkpoint
+[hadoop@ruozedata001 g9-0]$ 
+
+a.【二分查找】<=11500的最大的segment的文件组  11273
+b.去11273.index文件【二分查找】<=11500的最大的offset  offset: 11493 position: 20680 物理偏移量
+c.根据20680物理偏移量去迅速定位到20680位置，按【顺序查找】，一直查到offset为11500的数据。
+
+
+6.交付语义
+http://kafka.apache.org/21/documentation.html#semantics   【翻译】
+
+At most once—Messages may be lost but are never redelivered.   最多一次  0 1
+At least once—Messages are never lost but may be redelivered.  最少一次  1 2 3 4
+Exactly once—this is what people actually want, each message is delivered once and only once.  精确一次  1
+
+
+注意，这个语义其实是分2个部分，一个是发布消息，另外一个是消费消息
+
+
+Prior to 0.11.0.0, if a producer failed to receive a response indicating that 
+a message was committed, it had little choice but to resend the message. 
+This provides at-least-once delivery semantics since the message may be 
+written to the log again during resending if the original request had in 
+fact succeeded. Since 0.11.0.0, the Kafka producer also supports an idempotent 
+delivery option which guarantees that resending will not result in duplicate entries in the log. 
+To achieve this, the broker assigns each producer an ID and deduplicates messages using 
+a sequence number that is sent by the producer along with every message. 
+Also beginning with 0.11.0.0, the producer supports the ability to send messages to 
+multiple topic partitions using transaction-like semantics: i.e. either all messages are 
+successfully written or none of them are. The main use case for this is exactly-once processing 
+between Kafka topics (described below).
+
+在0.11版本后 kafka官方做好了 生产者的  精准一次  是幂等性的 
+
+
+消费者
+消费哪条  就记录哪条消息的offset 
+经典的 ss+kafka
+http://spark.apache.org/docs/latest/streaming-kafka-0-10-integration.html#obtaining-offsets
+
+
+彩蛋视频
+
+周六：8-10    kafka + cdh动态资源池 多租户  
+周日：下午1-4 hbase   晚上不上课  
+下周三: 9-11  hbase   hbase to es
+下周六晚：   cdh kerberos
+
+
+    <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>2.2.1</version>
+    </dependency>

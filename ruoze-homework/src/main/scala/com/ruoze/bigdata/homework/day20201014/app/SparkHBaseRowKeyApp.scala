@@ -23,23 +23,42 @@ object SparkHBaseRowKeyApp extends Logging {
 
     //hbase相关配置
     val zk = conf.get("spark.hbase.zookeeper.quorum", "hadoop:2181")
-    val hbaseTable = conf.get("spark.hbase.table", "ruozedata:access_log")
-    val rowKeyFiledName: String = conf.get("hbase.table.rowkey.filed.name", "url")
+    val hbaseOutTable = conf.get("spark.hbase.out.table", "ruozedata:access_log")
+    val rowKeyFiledName: String = conf.get("hbase.table.rowkey.filed.name", "minute")
+    val hbaseInTable = conf.get("spark.hbase.in.table", hbaseOutTable)
+
+    //定义HBase table schema
+    val tableSchema = "(rowKey string,ip string,proxyIp string,responseTime int,referer string,method string,url string,httpCode string,requestSize string,responseSize string,cache string,uaHead string,fileType string,province string,city string,isp string,http string,domain string,path string,params string,year string,month string,day string,hour string,minute string,second string,time string)"
 
     //读取raw数据
     val rawFormat = "com.ruoze.bigdata.homework.day20201014.raw"
-    val rawDF: DataFrame = spark.read.format(rawFormat).load(input)
-    rawDF.show(10, false)
+    /*val rawDF: DataFrame = spark.read.format(rawFormat).load(input)
+    rawDF.show(10, false)*/
+    logError("读取raw数据成功")
 
     //落地到HBase
     val hbaseFormat = "com.ruoze.bigdata.homework.day20201014.hbase"
-    rawDF
+    /*rawDF
       .write
       .option("hbase.zookeeper.quorum", zk)
-      .option("hbase.table",hbaseTable)
-      .option("hbase.table.rowkey.filed.name",rowKeyFiledName)
+      .option("hbase.out.table", hbaseOutTable)
+      .option("hbase.table.rowkey.filed.name", rowKeyFiledName)
       .format(hbaseFormat)
-      .save()
+      .save()*/
+    logError("写入HBase成功......")
+
+    //读取HBase的数据
+    val hbaseDF: DataFrame = spark
+      .read
+      .option("hbase.zookeeper.quorum", zk)
+      .option("hbase.in.table", hbaseInTable)
+      .option("hbase.table.rowkey.filed.name", rowKeyFiledName)
+//      .option("spark.table.schema", tableSchema)
+      .option("hbase.table.column.family","f")
+      .format(hbaseFormat)
+      .load()
+
+    hbaseDF.show(false)
 
 
     spark.stop()
