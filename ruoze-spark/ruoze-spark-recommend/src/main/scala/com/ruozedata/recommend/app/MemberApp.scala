@@ -35,9 +35,9 @@ object MemberApp extends Logging {
 
     member.createOrReplaceTempView("member")
 
-//    memberSexStat
+    memberSexStat
 //    memberChannelStat
-    memberWXStat
+//    memberWXStat
 
     def memberWXStat: Unit = {
       logError("订阅统计........")
@@ -79,7 +79,7 @@ object MemberApp extends Logging {
       logError("性别统计........")
       val sql =
         """
-          |select sex,count(1) cnt from member group by sex
+          |select sex,count(1) cnts from member group by sex
           |""".stripMargin
 
       val result: DataFrame = spark.sql(sql)
