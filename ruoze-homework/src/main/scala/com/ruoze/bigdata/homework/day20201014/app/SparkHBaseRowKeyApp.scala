@@ -32,19 +32,19 @@ object SparkHBaseRowKeyApp extends Logging {
 
     //读取raw数据
     val rawFormat = "com.ruoze.bigdata.homework.day20201014.raw"
-    /*val rawDF: DataFrame = spark.read.format(rawFormat).load(input)
-    rawDF.show(10, false)*/
+    val rawDF: DataFrame = spark.read.format(rawFormat).load(input)
+    rawDF.show(10, false)
     logError("读取raw数据成功")
 
     //落地到HBase
     val hbaseFormat = "com.ruoze.bigdata.homework.day20201014.hbase"
-    /*rawDF
+    rawDF
       .write
       .option("hbase.zookeeper.quorum", zk)
       .option("hbase.out.table", hbaseOutTable)
       .option("hbase.table.rowkey.filed.name", rowKeyFiledName)
       .format(hbaseFormat)
-      .save()*/
+      .save()
     logError("写入HBase成功......")
 
     //读取HBase的数据
