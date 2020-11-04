@@ -1,13 +1,13 @@
-package com.ruozedata.ruozesbspark;
+package com.ruozedata.ruozesparksb;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RuozeSbSparkApplicationTests {
+class RuozeSparkSbApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+	@Test
+	void contextLoads() {
+	}
 
 }
