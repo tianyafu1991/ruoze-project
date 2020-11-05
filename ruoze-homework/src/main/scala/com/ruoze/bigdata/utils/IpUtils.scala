@@ -21,8 +21,8 @@ object IpUtils {
    * @return
    */
   def analysisIp(ip:String):Array[String] ={
-    val dbPath = "ruoze-homework/src/main/resources/db/ip2region.db"
-//    val dbPath = "ip2region.db"
+//    val dbPath = "ruoze-homework/src/main/resources/db/ip2region.db"
+    val dbPath = "ip2region.db"
 //    val dbPath = "ip2region.db"
     val dbConfig = getDbConfig()
     val dbSearcher = getDbSearcher(dbConfig, dbPath)
