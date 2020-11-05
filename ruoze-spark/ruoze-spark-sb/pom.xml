@@ -125,10 +125,20 @@
 
     <build>
         <plugins>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+                <configuration>
+                    <mainClass>com.ruozedata.ruozesparksb.RuozeSparkSbApplication</mainClass>
+                    <includes>
+                        &lt;!&ndash; 设置没有jar包&ndash;&gt;
+                        <include>
+                            <groupId>nothing</groupId>
+                            <artifactId>nothing</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+            </plugin>-->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
@@ -174,7 +184,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.ruozedata.ruozesbspark.RuozeSbSparkApplication</mainClass>
+                            <mainClass>com.ruozedata.ruozesparksb.RuozeSparkSbApplication</mainClass>
                         </manifest>
                         <manifestEntries>
                             <version>${project.version}</version>

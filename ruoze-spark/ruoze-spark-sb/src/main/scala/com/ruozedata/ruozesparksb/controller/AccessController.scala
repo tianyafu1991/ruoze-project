@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.{PathVariable, RequestMapping, Re
 @RequestMapping(value = Array("/access"))
 class AccessController @Autowired()(val accessService: AccessService) {
 
-
+  // http://hadoop:9527/spark/access/20190101
   @RequestMapping(value = Array("/{date}"))
   def processAccessLog(@PathVariable date: String): String = {
     accessService.processAccessLog(date)

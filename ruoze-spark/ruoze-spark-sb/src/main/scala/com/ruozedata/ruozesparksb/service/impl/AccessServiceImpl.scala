@@ -26,7 +26,7 @@ class AccessServiceImpl @Autowired()(val spark: SparkSession) extends AccessServ
     val zk = conf.get("spark.hbase.zookeeper.quorum", "hadoop:2181")
     val hbaseTable = conf.get("spark.hbase.table", "ruozedata:access_log")
     val hostname = conf.get("spark.etl.hostname", "hadoop")
-    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", s"hdfs://${hostname}:9000")
+//    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", s"hdfs://${hostname}:9000")
 
     val mysqlTable = conf.get("spark.stat.mysql.table", "dwd_access_province_traffic")
 

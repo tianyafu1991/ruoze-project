@@ -22,7 +22,7 @@ public class RuozeSparkSbApplication {
 
 	@Bean
 	public SparkSession sparkSession() {
-		System.setProperty("HADOOP_USER_NAME", "hadoop");
+//		System.setProperty("HADOOP_USER_NAME", "hadoop");
 		SparkConf conf = sparkConf();
 		SparkSession spark = SparkSession.builder().config(conf).enableHiveSupport().getOrCreate();
 		return spark;
