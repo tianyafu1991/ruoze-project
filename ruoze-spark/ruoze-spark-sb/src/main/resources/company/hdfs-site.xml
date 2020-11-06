@@ -16,22 +16,13 @@
 
 <!-- Put site-specific property overrides in this file. -->
 
+
 <configuration>
-<property>
 
-        <name>fs.defaultFS</name>
-
-        <value>hdfs://hadoop01:9000</value>
-
-    </property>
-
+    <!--如果是云主机需要加这个参数-->
     <property>
-
-        <name>hadoop.tmp.dir</name>
-
-        <value>/home/hadoop/tmp/</value>
-
+        <name>dfs.client.use.datanode.hostname</name>
+        <value>true</value>
     </property>
-
 
 </configuration>

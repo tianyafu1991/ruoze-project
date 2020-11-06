@@ -10,9 +10,8 @@ class AccessController @Autowired()(val accessService: AccessService) {
 
   // http://hadoop:9527/spark/access/20190101
   @RequestMapping(value = Array("/{date}"))
-  def processAccessLog(@PathVariable date: String): String = {
+  def processAccessLog(@PathVariable date: String): Unit = {
     accessService.processAccessLog(date)
-    date
   }
 
 }

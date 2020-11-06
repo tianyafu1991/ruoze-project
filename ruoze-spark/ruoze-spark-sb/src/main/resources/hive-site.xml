@@ -1,9 +1,53 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
-    <property>
-        <name>hive.metastore.uris</name>
-        <value>thrift://hadoop:9083</value>
-    </property>
-</configuration>
+<property>
+<name>javax.jdo.option.ConnectionURL</name>
+<value>jdbc:mysql://localhost:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false</value>
+</property>
 
+<property>
+<name>javax.jdo.option.ConnectionDriverName</name>
+<value>com.mysql.jdbc.Driver</value>
+</property>
+
+<property>
+<name>javax.jdo.option.ConnectionUserName</name>
+<value>root</value>
+</property>
+
+<property>
+<name>javax.jdo.option.ConnectionPassword</name>
+<value>root</value>
+</property>
+
+<property>
+<name>hive.cli.print.current.db</name>
+<value>true</value>
+<description>打印当前hive库名</description>
+</property>
+
+<property>
+<name>hive.cli.print.header</name>
+<value>true</value>
+<description>打印当前hive表字段名</description>
+</property>
+
+<property>
+	<name>hive.server2.webui.host</name>
+	<value>hadoop01</value>
+	<description>hiveserver2的web ui</description>
+</property>
+
+<property>
+	<name>hive.server2.webui.port</name>
+	<value>19990</value>
+	<description>hiveserver2的web ui 的 port</description>
+</property>
+<property>
+<name>hive.metastore.uris</name>
+<value>thrift://hadoop01:9083</value>
+</property>
+
+
+</configuration>
