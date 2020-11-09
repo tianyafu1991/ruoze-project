@@ -6,6 +6,6 @@
 # 修改启动脚本，开放调试端口
 [hadoop@hadoop bin]$ vim flume-ng
 #JAVA_OPTS="-Xmx20m"
-JAVA_OPTS="-Xmx20m -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"
+JAVA_OPTS="-Xmx20m -Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"
 
 ```
