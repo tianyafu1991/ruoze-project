@@ -11,6 +11,10 @@
 
     <artifactId>ruoze-homework</artifactId>
 
+    <properties>
+        <influxdbClient.version>2.20</influxdbClient.version>
+    </properties>
+
     <dependencies>
 
         <!--
@@ -216,6 +220,13 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.6</version>
+        </dependency>
+
+        <!--https://github.com/influxdata/influxdb-java-->
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>${influxdbClient.version}</version>
         </dependency>
 
     </dependencies>
