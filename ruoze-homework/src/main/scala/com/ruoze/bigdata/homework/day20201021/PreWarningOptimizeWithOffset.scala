@@ -1,30 +1,30 @@
 package com.ruoze.bigdata.homework.day20201021
 
-import java.util
-
 import com.ruoze.bigdata.homework.day20201018.CDHLog
 import com.ruoze.bigdata.homework.day20201021.utils.{BroadcastUtils, InfluxDBUtils}
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, TaskContext}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.execution.streaming.CommitMetadata.format
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-import org.apache.spark.streaming.dstream.DStream
-import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils, LocationStrategies}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.streaming.dstream.{DStream, InputDStream}
+import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies, OffsetRange}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.influxdb.InfluxDB.ConsistencyLevel
+import org.influxdb.dto.{BatchPoints, Point}
 import org.influxdb.{InfluxDB, InfluxDBFactory}
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Json
-import org.influxdb.dto.{BatchPoints, Point}
 
 /**
  * 优化collectAsList()
+ * 并添加offset提交，offset管理到MySQL
  * scala版本
  */
-object PreWarningOptimize extends Logging {
+object PreWarningOptimizeWithOffset extends Logging {
 
   var updatedBroadcast: Broadcast[List[String]] = _
 
@@ -51,20 +51,29 @@ object PreWarningOptimize extends Logging {
     val topics = Array("PREWARNING")
 
     //对接Kafka
-    val lines = KafkaUtils.createDirectStream[String, String](
+    val streams: DStream[String] = KafkaUtils.createDirectStream[String, String](
       ssc,
       LocationStrategies.PreferConsistent,
       ConsumerStrategies.Subscribe[String, String](topics, kafkaParams)
-    )
+    ).map(_.value())
+
+    //获取到这个stream中的offset
+    var offsetRanges: Array[OffsetRange] = null
+    val lines: DStream[String] = streams.transform(rdd => {
+      offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+      offsetRanges.foreach(x => {
+        logError(s"${x.topic}, ${x.partition}, ${x.fromOffset}, ${x.untilOffset}")
+      })
+      rdd
+    })
 
     //经过过滤后将json转换为对象后，开窗
     val windowDStream: DStream[CDHLog] = lines
-      .filter(x => {
-        val json = x.value()
+      .filter(json => {
         json.contains("INFO") || json.contains("WARN") || json.contains("ERROR") || json.contains("DEBUG") || json.contains("FATAL")
       })
-      .map(x => {
-        val value = Json(DefaultFormats).parse(x.value())
+      .map(json => {
+        val value = Json(DefaultFormats).parse(json)
         val log: CDHLog = value.extract[CDHLog]
         log
       })
@@ -115,11 +124,15 @@ object PreWarningOptimize extends Logging {
 
         val statDF: DataFrame = spark.sql(statSql)
         statDF.rdd.foreachPartition(partition => {
+          //获取到这个partition的offsetRange
+          val offsetRange: OffsetRange = offsetRanges(TaskContext.get.partitionId)
 
           val influxDB: (InfluxDB, String) = generateInfluxDB
           val batchPoints: BatchPoints = BatchPoints
             .database("ruozedata")
-            .retentionPolicy(influxDB._2).build
+            .retentionPolicy(influxDB._2)
+//            .consistency(ConsistencyLevel.ALL) 一致性级别
+            .build
 
           partition.foreach(row => {
             val host_service_type = s"${row.getString(0)}_${row.getString(1)}_${row.getString(2)}"
@@ -134,6 +147,7 @@ object PreWarningOptimize extends Logging {
           influxDB._1.write(batchPoints)
           influxDB._1.close
         })
+
 
       } else {
         logError("没有数据.............")

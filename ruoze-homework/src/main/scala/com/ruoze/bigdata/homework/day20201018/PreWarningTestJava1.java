@@ -18,6 +18,8 @@ import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.json.JSONObject;
+import org.json4s.DefaultFormats;
+import org.json4s.jackson.Json;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,21 +47,6 @@ public class PreWarningTestJava1 {
             JavaInputDStream<ConsumerRecord<String, String>> lines = KafkaUtils.createDirectStream(jssc,
                     LocationStrategies.PreferConsistent(),
                     ConsumerStrategies.Subscribe(Arrays.asList(topics), kafkaParams));
-
-            /*lines.filter(new Function<ConsumerRecord<String, String>, Boolean>() {
-                @Override
-                public Boolean call(ConsumerRecord<String, String> record) throws Exception {
-                    String value = record.value();
-                    return (value.contains("INFO") || value.contains("ERROR") || value.contains("WARNING") || value.contains("DEBUG") || value.contains("FATAL")
-                            )&& (value.contains("hostname") && value.contains("servicename"));
-                }
-            }).map(new Function<ConsumerRecord<String, String>, String>() {
-                @Override
-                public String call(ConsumerRecord<String, String> v1) throws Exception {
-                    return v1.value();
-                }
-            })
-                    .print();*/
 
 
             JavaDStream<CDHLogJava> cdhLogDStream = lines.filter(new Function<ConsumerRecord<String, String>, Boolean>() {

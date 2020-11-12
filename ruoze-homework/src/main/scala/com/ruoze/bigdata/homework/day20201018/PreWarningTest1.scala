@@ -19,12 +19,7 @@ object PreWarningTest1 extends Logging{
     val conf = new SparkConf()
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.registerKryoClasses(Array(classOf[ConsumerRecord[String, String]]))
-    /*val spark = SparkSession.builder().config(conf).getOrCreate()
-    import spark.implicits._*/
     val ssc: StreamingContext = new StreamingContext(conf, Seconds(5))
-
-    /*val checkpoint = "file:///F:\\study\\ruozedata\\ruoze-project\\chk"
-    ssc.checkpoint(checkpoint)*/
 
     val kafkaParams = Map[String, Object](
       CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> "hadoop01:9092",
@@ -47,12 +42,8 @@ object PreWarningTest1 extends Logging{
         val json = x.value()
         json.contains("INFO") || json.contains("WARN") || json.contains("ERROR") || json.contains("DEBUG") || json.contains("FATAL")
       })
-      .map(_.value())
-      .filter(x => {
-        x.contains("hostname") && x.contains("servicename")
-      })
       .map(x => {
-        val value = Json(DefaultFormats).parse(x)
+        val value = Json(DefaultFormats).parse(x.value())
         val log: CDHLog = value.extract[CDHLog]
         log
       })

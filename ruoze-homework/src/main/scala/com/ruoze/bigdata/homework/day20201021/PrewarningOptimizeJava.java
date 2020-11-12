@@ -115,7 +115,6 @@ public class PrewarningOptimizeJava {
                         }
 
                         Dataset<Row> statDs = spark.sql(statSql);
-//                        statDs.show();
 
                         statDs.foreachPartition(new ForeachPartitionFunction<Row>() {
                             @Override
