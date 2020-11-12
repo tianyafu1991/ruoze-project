@@ -17,7 +17,7 @@ public class BroadcastUtilsJava {
 
     private Broadcast<List<String>> broadcastList ;
 
-    private static String url = "jdbc:mysql://hadoop:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8";
+    private static String url = "jdbc:mysql://hadoop01:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8";
 
     private static String user = "root";
     private static String password = "root";

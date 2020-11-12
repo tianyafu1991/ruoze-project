@@ -9,6 +9,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
@@ -24,12 +25,11 @@ import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PrewarningOptimizeJava {
 
@@ -38,11 +38,11 @@ public class PrewarningOptimizeJava {
     public static void main(String[] args) {
         try {
 //            System.setProperty("HADOOP_USER_NAME", "hadoop");
-            String serverURL = "http://" + InfluxDBUtils.getInfluxIP() + ":" + InfluxDBUtils.getInfluxPORT(true);
+            /*String serverURL = "http://" + InfluxDBUtils.getInfluxIP() + ":" + InfluxDBUtils.getInfluxPORT(true);
             String username = "admin";
             String password = "admin";
             InfluxDB influxDB = InfluxDBFactory.connect(serverURL, username, password);
-            String retentionPolicy = InfluxDBUtils.defaultRetentionPolicy(influxDB.version());
+            String retentionPolicy = InfluxDBUtils.defaultRetentionPolicy(influxDB.version());*/
             SparkConf conf = new SparkConf();
             conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
             conf.registerKryoClasses(new Class[]{ConsumerRecord.class});
@@ -50,7 +50,7 @@ public class PrewarningOptimizeJava {
             JavaStreamingContext jssc = new JavaStreamingContext(new JavaSparkContext(spark.sparkContext()), new Duration(5000));
 
             Map<String, Object> kafkaParams = new HashMap<>();
-            kafkaParams.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "hadoop:9092");
+            kafkaParams.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "hadoop01:9092");
 
             //
             kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
@@ -108,7 +108,7 @@ public class PrewarningOptimizeJava {
                             statSql = "select hostname,servicename,logType,count(1) from prewarninglogs group by hostname,servicename,logType" +
                                     " union all " +
                                     " select t.hostname,t.servicename,t.logType,count(1) " +
-                                    " from (select hostname,servicename,logType from prewarninglogs where " + alertSql +
+                                    " from (select hostname,servicename,'alert' logType from prewarninglogs where " + alertSql +
                                     ") t group by t.hostname,t.servicename,t.logType";
 
                         } else {
@@ -116,9 +116,39 @@ public class PrewarningOptimizeJava {
                         }
 
                         Dataset<Row> statDs = spark.sql(statSql);
+                        statDs.show();
+
+                        statDs.foreachPartition(new ForeachPartitionFunction<Row>() {
+                            @Override
+                            public void call(Iterator<Row> t) throws Exception {
+                                String serverURL = "http://"+InfluxDBUtils.getInfluxIP()+":"+InfluxDBUtils.getInfluxPORT(true);
+                                String username = "admin";
+                                String password = "admin";
+                                InfluxDB influxDB  = InfluxDBFactory.connect(serverURL, username, password);
+                                String retentionPolicy = InfluxDBUtils.defaultRetentionPolicy(influxDB.version());
 
 
-                        List<Row> rows = statDs.collectAsList();
+                                BatchPoints batchPoints = BatchPoints.database("ruozedata").retentionPolicy(retentionPolicy).build();
+
+                                while (t.hasNext()){
+                                    Row row = t.next();
+                                    String hostServiceType = String.format("%s_%s_%s",row.getString(0),row.getString(1),row.getString(2));
+                                    Long cnts = row.getLong(3);
+                                    Point point = Point
+                                            .measurement("prewarning")
+                                            .tag("host_service_logType", hostServiceType)
+                                            .addField("count", cnts)
+                                            .build();
+                                    batchPoints.point(point);
+
+                                }
+                                influxDB.write(batchPoints);
+                                influxDB.close();
+                            }
+                        });
+
+
+                        /*List<Row> rows = statDs.collectAsList();
 
                         String value = "";
 
@@ -133,7 +163,9 @@ public class PrewarningOptimizeJava {
                             value = value.substring(0, value.length());
                             System.out.println(value+"========写出到influxDB================");
                             influxDB.write("ruozedata", retentionPolicy, InfluxDB.ConsistencyLevel.ONE, value);
-                        }
+                        }*/
+
+
                     }
                 }
             });

@@ -9,7 +9,7 @@ import java.util.Map;
 public class InfluxDBUtils {
 
     public static String getInfluxIP() {
-        String ip = "hadoop"; //修改自己的influxdb的机器IP
+        String ip = "hadoop01"; //修改自己的influxdb的机器IP
 
         Map<String, String> getenv = System.getenv();
         if (getenv.containsKey("INFLUXDB_IP")) {

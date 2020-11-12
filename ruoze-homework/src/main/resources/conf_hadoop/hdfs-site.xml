@@ -16,30 +16,13 @@
 
 <!-- Put site-specific property overrides in this file. -->
 
+
 <configuration>
 
-<property>
-
-        <name>dfs.replication</name>
-
-        <value>1</value>
-
-    </property>
-
+    <!--如果是云主机需要加这个参数-->
     <property>
-
-        <name>dfs.namenode.secondary.http-address</name>
-
-        <value>hadoop01:9868</value>
-
-    </property>
-
-    <property>
-
-        <name>dfs.namenode.secondary.https-address</name>
-
-        <value>hadoop01:9869</value>
-
+        <name>dfs.client.use.datanode.hostname</name>
+        <value>true</value>
     </property>
 
 </configuration>

@@ -41,7 +41,7 @@ object PreWarningOptimize extends Logging {
 
     //定义Kafka相关参数
     val kafkaParams = Map[String, Object](
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> "hadoop:9092",
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> "hadoop01:9092",
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
       ConsumerConfig.GROUP_ID_CONFIG -> "ruozedata",
@@ -136,7 +136,6 @@ object PreWarningOptimize extends Logging {
           val influxDB: (InfluxDB, String) = generateInfluxDB
           val batchPoints: BatchPoints = BatchPoints
             .database("ruozedata")
-            /*.tag("async", "true")*/
             .retentionPolicy(influxDB._2).build
 
           partition.foreach(row => {
