@@ -19,6 +19,10 @@ import org.json4s.jackson.Json
 import org.apache.spark.sql.execution.streaming.CommitMetadata.format
 import org.influxdb.dto.Point
 
+/**
+ * 测试写入influxDB
+ * scala版本
+ */
 object PreWarningTest2 extends Logging {
 
   def main(args: Array[String]): Unit = {

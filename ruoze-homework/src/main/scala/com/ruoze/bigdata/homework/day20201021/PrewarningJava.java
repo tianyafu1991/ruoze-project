@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 写入到influxDB,并更新广播变量
+ * Java版本
+ */
 public class PrewarningJava {
 
     private static Broadcast<List<String>> broadcastList;

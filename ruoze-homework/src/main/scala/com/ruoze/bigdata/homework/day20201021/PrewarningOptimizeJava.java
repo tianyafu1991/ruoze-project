@@ -31,6 +31,10 @@ import org.json.JSONObject;
 
 import java.util.*;
 
+/**
+ * 优化collectAsList()
+ * Java版本
+ */
 public class PrewarningOptimizeJava {
 
     private static Broadcast<List<String>> broadcastList;
@@ -38,11 +42,6 @@ public class PrewarningOptimizeJava {
     public static void main(String[] args) {
         try {
 //            System.setProperty("HADOOP_USER_NAME", "hadoop");
-            /*String serverURL = "http://" + InfluxDBUtils.getInfluxIP() + ":" + InfluxDBUtils.getInfluxPORT(true);
-            String username = "admin";
-            String password = "admin";
-            InfluxDB influxDB = InfluxDBFactory.connect(serverURL, username, password);
-            String retentionPolicy = InfluxDBUtils.defaultRetentionPolicy(influxDB.version());*/
             SparkConf conf = new SparkConf();
             conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
             conf.registerKryoClasses(new Class[]{ConsumerRecord.class});
@@ -104,7 +103,7 @@ public class PrewarningOptimizeJava {
                             for (String keyword : keywords) {
                                 alertSql += " logInfo like '%" + keyword + "%' or";
                             }
-                            alertSql = alertSql.substring(0,alertSql.length()-2);
+                            alertSql = alertSql.substring(0, alertSql.length() - 2);
                             statSql = "select hostname,servicename,logType,count(1) from prewarninglogs group by hostname,servicename,logType" +
                                     " union all " +
                                     " select t.hostname,t.servicename,t.logType,count(1) " +
@@ -116,23 +115,23 @@ public class PrewarningOptimizeJava {
                         }
 
                         Dataset<Row> statDs = spark.sql(statSql);
-                        statDs.show();
+//                        statDs.show();
 
                         statDs.foreachPartition(new ForeachPartitionFunction<Row>() {
                             @Override
                             public void call(Iterator<Row> t) throws Exception {
-                                String serverURL = "http://"+InfluxDBUtils.getInfluxIP()+":"+InfluxDBUtils.getInfluxPORT(true);
+                                String serverURL = "http://" + InfluxDBUtils.getInfluxIP() + ":" + InfluxDBUtils.getInfluxPORT(true);
                                 String username = "admin";
                                 String password = "admin";
-                                InfluxDB influxDB  = InfluxDBFactory.connect(serverURL, username, password);
+                                InfluxDB influxDB = InfluxDBFactory.connect(serverURL, username, password);
                                 String retentionPolicy = InfluxDBUtils.defaultRetentionPolicy(influxDB.version());
 
 
                                 BatchPoints batchPoints = BatchPoints.database("ruozedata").retentionPolicy(retentionPolicy).build();
 
-                                while (t.hasNext()){
+                                while (t.hasNext()) {
                                     Row row = t.next();
-                                    String hostServiceType = String.format("%s_%s_%s",row.getString(0),row.getString(1),row.getString(2));
+                                    String hostServiceType = String.format("%s_%s_%s", row.getString(0), row.getString(1), row.getString(2));
                                     Long cnts = row.getLong(3);
                                     Point point = Point
                                             .measurement("prewarning")
@@ -146,26 +145,6 @@ public class PrewarningOptimizeJava {
                                 influxDB.close();
                             }
                         });
-
-
-                        /*List<Row> rows = statDs.collectAsList();
-
-                        String value = "";
-
-                        for (Row row : rows) {
-                            String host_service_type = row.getString(0) + "_" + row.getString(1) + "_" + row.getString(2);
-                            String cnt = row.getLong(3)+"";
-                            value += String.format("prewarning,host_service_logType=%s count=%s\n",host_service_type,cnt);
-                        }
-
-                        if (value.length() > 0) {
-                            //去掉最后一个换行符
-                            value = value.substring(0, value.length());
-                            System.out.println(value+"========写出到influxDB================");
-                            influxDB.write("ruozedata", retentionPolicy, InfluxDB.ConsistencyLevel.ONE, value);
-                        }*/
-
-
                     }
                 }
             });

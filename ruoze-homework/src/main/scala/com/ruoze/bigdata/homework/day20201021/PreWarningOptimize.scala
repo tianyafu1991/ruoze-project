@@ -21,8 +21,8 @@ import org.json4s.jackson.Json
 import org.influxdb.dto.{BatchPoints, Point}
 
 /**
- * scala版优化collectAsList
- *
+ * 优化collectAsList()
+ * scala版本
  */
 object PreWarningOptimize extends Logging {
 
@@ -113,23 +113,6 @@ object PreWarningOptimize extends Logging {
               |""".stripMargin
         }
 
-        /*val rows: util.List[Row] = spark.sql(statSql).collectAsList()
-        var value = ""
-
-        for (i <- 0 until rows.size()) {
-          val row: Row = rows.get(i)
-          val host_service_type = s"${row.getString(0)}_${row.getString(1)}_${row.getString(2)}"
-          val cnt = row.getLong(3).toString
-          value += s"prewarning,host_service_logType=${host_service_type} count=${cnt}\n"
-        }
-
-        if (value.length > 0) {
-          //去掉最后一个换行符
-          value = value.substring(0, value.length)
-          logError(s"========================${value}")
-          influxDB._1.write("ruozedata", influxDB._2, InfluxDB.ConsistencyLevel.ONE, value)
-        }*/
-
         val statDF: DataFrame = spark.sql(statSql)
         statDF.rdd.foreachPartition(partition => {
 
@@ -140,7 +123,7 @@ object PreWarningOptimize extends Logging {
 
           partition.foreach(row => {
             val host_service_type = s"${row.getString(0)}_${row.getString(1)}_${row.getString(2)}"
-            val cnt = row.getLong(3).toString
+            val cnt = row.getLong(3)
             val point = Point
               .measurement("prewarning")
               .tag("host_service_logType", host_service_type)

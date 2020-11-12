@@ -13,7 +13,7 @@ object BroadcastUtils {
   var lastUpdateTimeStamp: Long = 0
   var updatedBroadcast: Broadcast[List[String]] = _
   def updateBroadcastValue(spark: SparkSession, broadcast: Broadcast[List[String]]): Broadcast[List[String]] = {
-    val url = "jdbc:mysql://hadoop:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8"
+    val url = "jdbc:mysql://hadoop01:3306/ruozedata?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8"
     val user = "root"
     val password = "root"
     val table = "prewarning_config"

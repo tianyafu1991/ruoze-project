@@ -20,6 +20,10 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Json
 import org.apache.spark.sql.execution.streaming.CommitMetadata.format
 
+/**
+ * 写入到influxDB,并更新广播变量
+ * Scala版本
+ */
 object PreWarning extends Logging {
 
   var updatedBroadcast: Broadcast[List[String]] = _
