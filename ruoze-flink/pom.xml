@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>ruoze-flink-basic</module>
+        <module>ruoze-flink-stream</module>
     </modules>
 
     <properties>
