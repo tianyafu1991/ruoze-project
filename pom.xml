@@ -10,6 +10,7 @@
     <modules>
         <module>ruoze-homework</module>
         <module>ruoze-spark</module>
+        <module>ruoze-flink</module>
     </modules>
     <packaging>pom</packaging>
 
