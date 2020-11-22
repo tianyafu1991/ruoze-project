@@ -18,4 +18,4 @@ port 16379
 daemonize yes
 
 
-[hadoop@hadoop01 redis-5.0.5]$ /home/hadoop/software/redis-5.0.5/src/redis-server /home/hadoop/software/redis-5.0.5/redis.conf
+[hadoop@hadoop01 redis-5.0.5]$ ~/software/redis-5.0.5/src/redis-server ~/software/redis-5.0.5/redis.conf
