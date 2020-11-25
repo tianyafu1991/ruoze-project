@@ -42,7 +42,7 @@ object SinkApp {
     val httpHosts = new util.ArrayList[HttpHost]()
     httpHosts.add(new HttpHost("hadoop01", 9200))
 
-//    result.addSink(new ElasticsearchSink.Builder[(String,Double)](httpHosts,sinkFunction))
+    result.addSink(new ElasticsearchSink.Builder[(String,Double)](httpHosts,sinkFunction).build())
     env.execute(getClass.getCanonicalName)
   }
 

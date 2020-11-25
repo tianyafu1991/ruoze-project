@@ -115,6 +115,12 @@
                 <version>${log4j.version}</version>
                 <scope>compile</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+                <version>${hadoop.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

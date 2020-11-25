@@ -39,6 +39,10 @@ vm.max_map_count = 655360
 [root@hadoop01 ~]# sysctl -a | grep "vm.max_map_count"
 vm.max_map_count = 655360
 
+永久解决方法
+[root@hadoop01 ~]# vim /etc/sysctl.conf
+vm.max_map_count = 655360
+
 
 [hadoop@hadoop elasticsearch]$ ERROR: [1] bootstrap checks failed
     [1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65535]

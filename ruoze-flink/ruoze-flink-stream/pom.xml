@@ -21,6 +21,11 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-clients_${scala.binary.version}</artifactId>
         </dependency>
+        <!--<dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+        </dependency>-->
+
 
         <dependency>
             <groupId>mysql</groupId>
@@ -51,7 +56,19 @@
 
         <dependency>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>httpcore</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+            </exclusions>
             <groupId>org.elasticsearch.client</groupId>
+        </dependency>
+
+        <dependency>
+            <artifactId>httpcore</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+            <version>4.4.13</version>
         </dependency>
 
         <!--日志相关依赖-->
