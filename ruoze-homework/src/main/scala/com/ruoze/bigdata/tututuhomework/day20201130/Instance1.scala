@@ -1,6 +1,6 @@
 package com.ruoze.bigdata.tututuhomework.day20201130
 
-object Instance1{
+/*object Instance1{
 
   def apply(): Instance1 = new Instance1()
 
@@ -24,6 +24,6 @@ class Instance1 extends Template {
     println("=========stop()=================")
   }
 
-}
+}*/
 
 

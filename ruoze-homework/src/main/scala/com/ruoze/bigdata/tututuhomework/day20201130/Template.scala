@@ -1,6 +1,8 @@
 package com.ruoze.bigdata.tututuhomework.day20201130
 
-trait Template {
+import org.apache.spark.{SparkConf, SparkContext}
+
+/*trait Template {
 
   def init()
 
@@ -17,6 +19,19 @@ trait Template {
     }
   }finally {
     stop()
+  }
+
+}*/
+
+trait Template {
+
+  def execute(): Unit = {
+    val conf:SparkConf = new SparkConf().setAppName(getClass.getCanonicalName).setMaster("local[2]")
+    val sc:SparkContext = new SparkContext(conf)
+
+
+
+    sc.stop()
   }
 
 }
