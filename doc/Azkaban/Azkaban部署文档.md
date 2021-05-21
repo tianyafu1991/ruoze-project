@@ -6,7 +6,7 @@
 azkaban.executorselector.filters=StaticRemainingFlowSize,MinimumFreeMemory,CpuStatus
 在Azkaban源码类ExecutorFilter中，MinimumFreeMemory为6G  MAX_CPU_CURRENT_USAGE 为95%
 所以如果机器资源不够 或者自己部署在虚拟机中  容易因内存不够而碰到这个内存6G的问题
-
+可以参考：https://www.jianshu.com/p/f539585a4612中提到的那些参数  到azkaban.properties中去配置
 ```
 
 # 解压
