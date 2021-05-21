@@ -1,3 +1,14 @@
+# 坑
+```
+1.Multiple Executor 模式下的6G内存的问题
+在Multiple Executor下 Azkaban在分发job给excutor的之前，会过滤出内存大于MinimumFreeMemory CPU小于最大使用率限制的excutor 那些内存、CPU不符合条件的excutor 不会分配job
+具体参数如下：
+azkaban.executorselector.filters=StaticRemainingFlowSize,MinimumFreeMemory,CpuStatus
+在Azkaban源码类ExecutorFilter中，MinimumFreeMemory为6G  MAX_CPU_CURRENT_USAGE 为95%
+所以如果机器资源不够 或者自己部署在虚拟机中  容易因内存不够而碰到这个内存6G的问题
+
+```
+
 # 解压
 [hadoop@ruozedata001 app]$ cd ~/software/
 [hadoop@ruozedata001 software]$ tar -xvf azkaban-web-server-0.1.0-SNAPSHOT.tar.gz -C ~/app/
